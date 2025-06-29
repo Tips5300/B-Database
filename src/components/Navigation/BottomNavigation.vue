@@ -1,13 +1,13 @@
 <template>
-  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
+  <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 safe-bottom">
     <div class="flex justify-around items-center h-16 px-4">
       <router-link
         v-for="item in navigationItems"
         :key="item.name"
         :to="item.path"
-        class="flex flex-col items-center justify-center flex-1 py-2 transition-colors duration-200"
+        class="flex flex-col items-center justify-center flex-1 py-2 transition-colors duration-200 min-h-[44px]"
         :class="[
-          $route.path === item.path || ($route.path.startsWith(item.path) && item.path !== '/')
+          isActiveRoute(item.path)
             ? 'text-primary-600 dark:text-primary-400'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
         ]"
@@ -23,6 +23,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   HomeIcon,
   ServerStackIcon,
@@ -30,6 +32,8 @@ import {
   ChartBarIcon,
   UserIcon
 } from '@heroicons/vue/24/outline'
+
+const route = useRoute()
 
 const navigationItems = [
   {
@@ -58,4 +62,11 @@ const navigationItems = [
     icon: UserIcon
   }
 ]
+
+const isActiveRoute = (path: string) => {
+  if (path === '/') {
+    return route.path === '/'
+  }
+  return route.path.startsWith(path)
+}
 </script>

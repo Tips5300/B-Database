@@ -5,6 +5,7 @@ import { PinAuthService } from '../services/PinAuthService'
 
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
+  const isInitialized = ref(false)
   const isLoading = ref(false)
   const authMethod = ref<'biometric' | 'pin' | null>(null)
   const deviceId = ref('')
@@ -20,6 +21,8 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   const initializeAuth = async () => {
+    if (isInitialized.value) return
+    
     isLoading.value = true
     try {
       // Generate or get device ID
@@ -60,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('Failed to initialize auth:', error)
     } finally {
       isLoading.value = false
+      isInitialized.value = true
     }
   }
 
@@ -68,7 +72,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (method === 'biometric') {
       localStorage.setItem('preferBiometric', 'true')
     }
-    isAuthenticated.value = true
   }
 
   const authenticate = async (): Promise<boolean> => {
@@ -133,6 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     isAuthenticated,
+    isInitialized,
     isLoading,
     authMethod,
     deviceId,

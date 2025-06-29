@@ -1,14 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import Dashboard from '@/views/Dashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // Authentication Routes
+    {
+      path: '/auth',
+      name: 'auth',
+      component: () => import('@/views/Auth/AuthScreen.vue'),
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/setup',
+      name: 'setup',
+      component: () => import('@/views/Auth/SetupScreen.vue'),
+      meta: { requiresGuest: true }
+    },
+    
+    // Main App Routes
     {
       path: '/',
       name: 'dashboard',
-      component: Dashboard,
+      component: () => import('@/views/Dashboard.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -58,21 +72,49 @@ const router = createRouter({
       name: 'help',
       component: () => import('@/views/Help.vue'),
       meta: { requiresAuth: true }
+    },
+    
+    // Catch all route
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      redirect: '/'
     }
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!authStore.isAuthenticated) {
-      // Will be handled by App.vue auth flow
-      next()
+  // Initialize auth if not already done
+  if (!authStore.isInitialized) {
+    await authStore.initializeAuth()
+  }
+  
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
+  
+  if (requiresAuth) {
+    if (!authStore.hasAuthSetup) {
+      // No auth setup, redirect to setup
+      next('/setup')
+    } else if (!authStore.isAuthenticated) {
+      // Has auth setup but not authenticated, redirect to auth
+      next('/auth')
     } else {
+      // Authenticated, proceed
+      next()
+    }
+  } else if (requiresGuest) {
+    if (authStore.isAuthenticated) {
+      // Already authenticated, redirect to dashboard
+      next('/')
+    } else {
+      // Not authenticated, proceed to guest route
       next()
     }
   } else {
+    // No auth requirements, proceed
     next()
   }
 })

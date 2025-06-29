@@ -5,7 +5,7 @@
       icon="⚙️"
     />
 
-    <div class="p-4 space-y-6">
+    <div class="p-4 space-y-6 pb-20">
       <!-- Appearance -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -215,18 +215,10 @@
         </div>
       </div>
     </div>
-
-    <!-- Auth Setup Modal -->
-    <BiometricSetup
-      v-if="showAuthSetup"
-      @success="handleAuthSetupSuccess"
-      @skip="showAuthSetup = false"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
@@ -240,15 +232,12 @@ import {
   ArrowUpTrayIcon
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
-import BiometricSetup from '@/components/Auth/BiometricSetup.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
-
-const showAuthSetup = ref(false)
 
 const toggleCompactMode = () => {
   settingsStore.compactMode = !settingsStore.compactMode
@@ -262,27 +251,20 @@ const toggleAutoBackup = () => {
   toast.success(`Auto backup ${settingsStore.autoBackup ? 'enabled' : 'disabled'}`)
 }
 
-const changeAuthMethod = () => {
-  showAuthSetup.value = true
+const changeAuthMethod = async () => {
+  await router.push('/setup')
 }
 
-const handleAuthSetupSuccess = (method: 'biometric' | 'pin') => {
-  authStore.setupAuth(method)
-  showAuthSetup.value = false
-  toast.success(`${method === 'biometric' ? 'Biometric' : 'PIN'} authentication set up successfully`)
-}
-
-const resetAuth = () => {
+const resetAuth = async () => {
   if (confirm('Are you sure you want to reset authentication? You will need to set it up again.')) {
     authStore.resetAuth()
-    toast.success('Authentication reset successfully')
+    await router.push('/setup')
   }
 }
 
 const navigateToSubscription = async () => {
   try {
     await router.push('/subscription')
-    toast.info('💎 Opening subscription settings...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open subscription settings')
@@ -304,7 +286,7 @@ const exportAllData = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('📥 Data exported successfully')
+    toast.success('Data exported successfully')
   } catch (error) {
     toast.error('Failed to export data')
   }
@@ -323,7 +305,7 @@ const importData = () => {
           createTable: true,
           updateExisting: false
         })
-        toast.success('📤 Data imported successfully')
+        toast.success('Data imported successfully')
       } catch (error) {
         toast.error('Failed to import data')
       }
@@ -336,7 +318,7 @@ const clearAllData = () => {
   if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
     // Clear localStorage database
     localStorage.removeItem('database')
-    toast.success('🗑️ All data cleared')
+    toast.success('All data cleared')
     // Reload the page to reinitialize
     window.location.reload()
   }
