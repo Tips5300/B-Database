@@ -3,6 +3,7 @@ export interface Database {
   name: string
   description?: string
   thumbnail?: string
+  emoji?: string
   isEncrypted: boolean
   encryptionKey?: string
   tables: Table[]
@@ -14,6 +15,7 @@ export interface Table {
   id: string
   name: string
   thumbnail?: string
+  emoji?: string
   databaseId: string
   fields: Field[]
   records: Record[]

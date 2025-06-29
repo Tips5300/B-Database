@@ -34,7 +34,7 @@ interface Props {
   compact?: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:value': [value: number]
