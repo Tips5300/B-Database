@@ -43,6 +43,7 @@
               class="w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-center text-xl tracking-widest"
               placeholder="Enter PIN"
               @input="handlePinInput"
+              :disabled="isLockedOut"
             />
           </div>
           
@@ -55,15 +56,29 @@
               :class="i <= pin.length ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'"
             ></div>
           </div>
+
+          <!-- Attempts Warning -->
+          <div v-if="remainingAttempts < 5 && remainingAttempts > 0" class="text-center">
+            <p class="text-sm text-yellow-600 dark:text-yellow-400">
+              {{ remainingAttempts }} attempt{{ remainingAttempts !== 1 ? 's' : '' }} remaining
+            </p>
+          </div>
+
+          <!-- Lockout Message -->
+          <div v-if="isLockedOut" class="text-center">
+            <p class="text-sm text-red-600 dark:text-red-400">
+              Too many failed attempts. Try again in {{ lockoutTimeRemaining }}
+            </p>
+          </div>
         </div>
 
         <!-- Error Message -->
-        <div v-if="error" class="text-red-600 dark:text-red-400 text-sm text-center">
+        <div v-if="error" class="text-red-600 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
           {{ error }}
         </div>
 
         <!-- Alternative Auth Method -->
-        <div class="text-center">
+        <div v-if="canSwitchMethod" class="text-center">
           <button
             @click="switchAuthMethod"
             class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium text-sm transition-colors duration-200"
@@ -87,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { BiometricAuthService } from '../../services/BiometricAuthService'
 import { PinAuthService } from '../../services/PinAuthService'
 import {
@@ -105,6 +120,15 @@ const pin = ref('')
 const error = ref('')
 const isLoading = ref(false)
 const biometricAvailable = ref(false)
+const remainingAttempts = ref(5)
+const isLockedOut = ref(false)
+const lockoutTimeRemaining = ref('')
+
+let lockoutTimer: NodeJS.Timeout | null = null
+
+const canSwitchMethod = computed(() => {
+  return biometricAvailable.value && PinAuthService.hasPinSet()
+})
 
 const authenticateWithBiometric = async () => {
   error.value = ''
@@ -134,6 +158,7 @@ const handlePinInput = async () => {
     } else {
       error.value = 'Invalid PIN'
       pin.value = ''
+      updateLockoutStatus()
     }
   }
 }
@@ -145,17 +170,50 @@ const switchAuthMethod = () => {
 }
 
 const resetAuth = () => {
-  emit('reset')
+  if (confirm('This will reset all authentication settings. You will need to set up authentication again. Continue?')) {
+    emit('reset')
+  }
+}
+
+const updateLockoutStatus = () => {
+  remainingAttempts.value = PinAuthService.getRemainingAttempts()
+  isLockedOut.value = PinAuthService.isLockedOut()
+  
+  if (isLockedOut.value) {
+    updateLockoutTimer()
+  }
+}
+
+const updateLockoutTimer = () => {
+  const updateTimer = () => {
+    const timeRemaining = PinAuthService.getLockoutTimeRemaining()
+    if (timeRemaining > 0) {
+      lockoutTimeRemaining.value = PinAuthService.formatLockoutTime(timeRemaining)
+      lockoutTimer = setTimeout(updateTimer, 1000)
+    } else {
+      isLockedOut.value = false
+      remainingAttempts.value = 5
+      lockoutTimeRemaining.value = ''
+    }
+  }
+  updateTimer()
 }
 
 onMounted(async () => {
   biometricAvailable.value = await BiometricAuthService.isAvailable()
   
   // Determine default auth method
-  if (biometricAvailable.value) {
+  if (biometricAvailable.value && BiometricAuthService.hasCredential()) {
     authMethod.value = 'biometric'
   } else if (PinAuthService.hasPinSet()) {
     authMethod.value = 'pin'
+    updateLockoutStatus()
+  }
+})
+
+onUnmounted(() => {
+  if (lockoutTimer) {
+    clearTimeout(lockoutTimer)
   }
 })
 </script>

@@ -9,9 +9,14 @@ export const useAuthStore = defineStore('auth', () => {
   const authMethod = ref<'biometric' | 'pin' | null>(null)
   const deviceId = ref('')
   const subscriptionPlan = ref('free')
+  const user = ref({
+    name: 'Database User',
+    email: 'user@example.com'
+  })
+  const userPlan = computed(() => subscriptionPlan.value.charAt(0).toUpperCase() + subscriptionPlan.value.slice(1))
 
   const hasAuthSetup = computed(() => {
-    return PinAuthService.hasPinSet() || authMethod.value === 'biometric'
+    return PinAuthService.hasPinSet() || BiometricAuthService.hasCredential()
   })
 
   const initializeAuth = async () => {
@@ -25,11 +30,12 @@ export const useAuthStore = defineStore('auth', () => {
       }
       deviceId.value = storedDeviceId
 
-      // Check if biometric is available and preferred
+      // Check authentication methods
       const biometricAvailable = await BiometricAuthService.isAvailable()
+      const hasBiometricCredential = BiometricAuthService.hasCredential()
       const hasPinSet = PinAuthService.hasPinSet()
       
-      if (biometricAvailable && localStorage.getItem('preferBiometric') === 'true') {
+      if (biometricAvailable && hasBiometricCredential) {
         authMethod.value = 'biometric'
       } else if (hasPinSet) {
         authMethod.value = 'pin'
@@ -39,6 +45,16 @@ export const useAuthStore = defineStore('auth', () => {
       const savedPlan = localStorage.getItem('subscriptionPlan')
       if (savedPlan) {
         subscriptionPlan.value = savedPlan
+      }
+
+      // Load user data
+      const savedUser = localStorage.getItem('user_profile')
+      if (savedUser) {
+        try {
+          user.value = JSON.parse(savedUser)
+        } catch (error) {
+          console.error('Failed to parse user data:', error)
+        }
       }
     } catch (error) {
       console.error('Failed to initialize auth:', error)
@@ -80,6 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const resetAuth = () => {
     PinAuthService.removePin()
+    BiometricAuthService.removeCredential()
     localStorage.removeItem('preferBiometric')
     authMethod.value = null
     isAuthenticated.value = false
@@ -90,18 +107,46 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('subscriptionPlan', plan)
   }
 
+  const updateProfile = (profileData: any) => {
+    user.value = { ...user.value, ...profileData }
+    localStorage.setItem('user_profile', JSON.stringify(user.value))
+  }
+
+  // Mock login for demo purposes
+  const login = async (credentials: any): Promise<boolean> => {
+    isLoading.value = true
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      if (credentials.email === 'demo@example.com' && credentials.password === 'demo') {
+        isAuthenticated.value = true
+        return true
+      }
+      return false
+    } catch (error) {
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     isAuthenticated,
     isLoading,
     authMethod,
     deviceId,
     subscriptionPlan,
+    user,
+    userPlan,
     hasAuthSetup,
     initializeAuth,
     setupAuth,
     authenticate,
     logout,
     resetAuth,
-    updateSubscription
+    updateSubscription,
+    updateProfile,
+    login
   }
 })
