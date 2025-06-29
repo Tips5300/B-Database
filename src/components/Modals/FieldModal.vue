@@ -545,6 +545,10 @@ const removeEnumValue = (index: number) => {
   formData.options.enumValues.splice(index, 1)
 }
 
+const handleEnumOptionsUpdate = (options: { enumValues: string[] }) => {
+  formData.options.enumValues = options.enumValues
+}
+
 watch(maxFileSizeMB, (newValue) => {
   formData.options.maxFileSize = newValue * 1024 * 1024
 })

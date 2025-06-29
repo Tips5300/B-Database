@@ -87,6 +87,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:value': [value: string]
+  'update:options': [options: { enumValues: string[] }]
 }>()
 
 const newOption = ref('')
@@ -102,15 +103,15 @@ const updateValue = (event: Event) => {
 
 const addOption = () => {
   if (newOption.value.trim() && !enumOptions.value.includes(newOption.value.trim())) {
-    // In a real implementation, this would update the field options
-    // For now, we'll just emit an event or handle it differently
-    console.log('Add option:', newOption.value.trim())
+    const updatedOptions = [...enumOptions.value, newOption.value.trim()]
+    emit('update:options', { enumValues: updatedOptions })
     newOption.value = ''
   }
 }
 
 const removeOption = (index: number) => {
-  // In a real implementation, this would update the field options
-  console.log('Remove option at index:', index)
+  const updatedOptions = [...enumOptions.value]
+  updatedOptions.splice(index, 1)
+  emit('update:options', { enumValues: updatedOptions })
 }
 </script>

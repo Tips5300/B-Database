@@ -98,6 +98,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useToast } from 'vue-toastification'
 import type { Field } from '@/types/database'
 import {
   CodeBracketIcon,
@@ -117,6 +118,7 @@ const emit = defineEmits<{
   'update:value': [value: any]
 }>()
 
+const toast = useToast()
 const jsonText = ref('')
 const jsonError = ref('')
 
@@ -158,9 +160,11 @@ const formatEditorJson = () => {
       const parsed = JSON.parse(jsonText.value)
       jsonText.value = JSON.stringify(parsed, null, 2)
       jsonError.value = ''
+      toast.success('JSON formatted successfully')
     }
   } catch (error) {
     jsonError.value = 'Cannot format invalid JSON'
+    toast.error('Cannot format invalid JSON')
   }
 }
 
@@ -170,9 +174,11 @@ const minifyJson = () => {
       const parsed = JSON.parse(jsonText.value)
       jsonText.value = JSON.stringify(parsed)
       jsonError.value = ''
+      toast.success('JSON minified successfully')
     }
   } catch (error) {
     jsonError.value = 'Cannot minify invalid JSON'
+    toast.error('Cannot minify invalid JSON')
   }
 }
 
@@ -182,12 +188,14 @@ const insertTemplate = (type: 'object' | 'array') => {
     array: '[\n  "item1",\n  "item2"\n]'
   }
   jsonText.value = templates[type]
+  toast.info(`${type.charAt(0).toUpperCase() + type.slice(1)} template inserted`)
 }
 
 const clearJson = () => {
   jsonText.value = ''
   emit('update:value', null)
   jsonError.value = ''
+  toast.info('JSON cleared')
 }
 
 const getCompactJson = (value: any) => {
@@ -205,9 +213,10 @@ const copyJson = async () => {
   if (props.value) {
     try {
       await navigator.clipboard.writeText(JSON.stringify(props.value, null, 2))
-      // Could show a toast notification here
+      toast.success('JSON copied to clipboard!')
     } catch (error) {
       console.error('Failed to copy JSON:', error)
+      toast.error('Failed to copy JSON')
     }
   }
 }
@@ -215,9 +224,9 @@ const copyJson = async () => {
 const validateJson = () => {
   try {
     JSON.parse(JSON.stringify(props.value))
-    alert('JSON is valid!')
+    toast.success('JSON is valid!')
   } catch (error) {
-    alert('JSON is invalid: ' + error)
+    toast.error(`JSON is invalid: ${error}`)
   }
 }
 

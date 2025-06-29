@@ -9,6 +9,7 @@
       :tables="tables"
       :records="records"
       @update:value="$emit('update:value', $event)"
+      @update:options="handleOptionsUpdate"
       @create-record="$emit('create-record', $event)"
     />
   </div>
@@ -45,10 +46,15 @@ interface Props {
 
 defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   'update:value': [value: any]
+  'update:options': [options: any]
   'create-record': [tableId: string, data: any]
 }>()
+
+const handleOptionsUpdate = (options: any) => {
+  emit('update:options', options)
+}
 
 const getRendererComponent = (type: FieldType) => {
   const renderers = {

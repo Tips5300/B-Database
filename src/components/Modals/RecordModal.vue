@@ -35,6 +35,7 @@
               :value="formData[field.id]"
               :readonly="false"
               @update:value="updateFieldValue(field.id, $event)"
+              @update:options="handleFieldOptionsUpdate(field.id, $event)"
             />
             
             <div v-if="fieldErrors[field.id]" class="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -66,6 +67,7 @@
 
 <script setup lang="ts">
 import { reactive, computed, onMounted } from 'vue'
+import { useDatabaseStore } from '@/stores/database'
 import type { Table, Record } from '@/types/database'
 import { XMarkIcon } from '@heroicons/vue/24/outline'
 import FieldRenderer from '@/components/FieldRenderers/FieldRenderer.vue'
@@ -82,6 +84,7 @@ const emit = defineEmits<{
   save: [data: any]
 }>()
 
+const databaseStore = useDatabaseStore()
 const formData = reactive<{ [fieldId: string]: any }>({})
 const fieldErrors = reactive<{ [fieldId: string]: string }>({})
 
@@ -100,6 +103,19 @@ const isValid = computed(() => {
 const updateFieldValue = (fieldId: string, value: any) => {
   formData[fieldId] = value
   validateField(fieldId, value)
+}
+
+const handleFieldOptionsUpdate = async (fieldId: string, options: any) => {
+  // Update field options in the database
+  try {
+    const field = props.table.fields.find(f => f.id === fieldId)
+    if (field) {
+      const updatedOptions = { ...field.options, ...options }
+      await databaseStore.updateField(fieldId, { options: updatedOptions })
+    }
+  } catch (error) {
+    console.error('Failed to update field options:', error)
+  }
 }
 
 const validateField = (fieldId: string, value: any) => {

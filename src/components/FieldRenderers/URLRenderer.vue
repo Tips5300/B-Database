@@ -83,6 +83,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useToast } from 'vue-toastification'
 import type { Field } from '@/types/database'
 import {
   LinkIcon,
@@ -102,6 +103,7 @@ const emit = defineEmits<{
   'update:value': [value: string]
 }>()
 
+const toast = useToast()
 const urlError = ref('')
 const preview = ref<{
   title: string
@@ -143,6 +145,7 @@ const getDomain = (url: string) => {
 const testUrl = () => {
   if (props.value) {
     window.open(props.value, '_blank', 'noopener,noreferrer')
+    toast.success('URL opened in new tab')
   }
 }
 
@@ -150,15 +153,26 @@ const loadPreview = async () => {
   if (!props.value || !isValidUrl(props.value)) return
   
   try {
-    // In a real implementation, this would call a backend service
-    // to fetch URL metadata to avoid CORS issues
+    // NOTE: In a real implementation, this would call a backend service
+    // to fetch URL metadata to avoid CORS issues. The backend would:
+    // 1. Fetch the URL content server-side
+    // 2. Parse meta tags (og:title, og:description, og:image)
+    // 3. Return structured metadata to the frontend
+    // 
+    // Example backend endpoint: POST /api/url-preview
+    // Body: { url: "https://example.com" }
+    // Response: { title: "...", description: "...", image: "..." }
+    
     preview.value = {
       title: getDomain(props.value),
-      description: 'URL preview would be loaded here',
+      description: 'URL preview would be loaded here via backend service',
       image: undefined
     }
+    
+    toast.info('URL preview loaded (demo mode)')
   } catch (error) {
     console.error('Failed to load preview:', error)
+    toast.error('Failed to load URL preview')
   }
 }
 </script>

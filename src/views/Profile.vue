@@ -161,6 +161,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useDatabaseStore } from '@/stores/database'
 import { useToast } from 'vue-toastification'
+import { deleteDatabase } from '@/database/connection'
 import {
   UserIcon,
   StarIcon,
@@ -265,11 +266,18 @@ const shareApp = async () => {
   }
 }
 
-const resetAllData = () => {
+const resetAllData = async () => {
   if (confirm('Are you sure you want to reset all data? This will delete everything and cannot be undone.')) {
     if (confirm('This is your final warning. All databases, tables, and records will be permanently deleted. Continue?')) {
-      localStorage.clear()
-      window.location.reload()
+      try {
+        await deleteDatabase()
+        localStorage.clear()
+        toast.success('All data has been reset')
+        window.location.reload()
+      } catch (error) {
+        console.error('Failed to reset data:', error)
+        toast.error('Failed to reset data')
+      }
     }
   }
 }
