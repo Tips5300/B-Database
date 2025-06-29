@@ -33,7 +33,7 @@
           v-for="database in filteredDatabases"
           :key="database.id"
           class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          @click="$router.push(`/database/${database.id}`)"
+          @click="navigateToDatabase(database.id)"
         >
           <div class="flex items-start space-x-3 mb-3">
             <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
@@ -171,8 +171,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useDatabaseStore } from '@/stores/database'
+import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { useDatabaseStore } from '@/stores/database'
 import type { Database } from '@/database/entities/Database'
 import {
   PlusIcon,
@@ -187,6 +188,7 @@ import {
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
 import CreateDatabaseModal from '@/components/Modals/CreateDatabaseModal.vue'
 
+const router = useRouter()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
 
@@ -206,6 +208,16 @@ const filteredDatabases = computed(() => {
     db.description?.toLowerCase().includes(query)
   )
 })
+
+const navigateToDatabase = async (databaseId: string) => {
+  try {
+    await router.push(`/database/${databaseId}`)
+    toast.info('📊 Opening database...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open database')
+  }
+}
 
 const handleSearch = () => {
   showSearch.value = !showSearch.value
@@ -239,7 +251,7 @@ const duplicateDatabase = async () => {
       selectedDatabase.value.description,
       selectedDatabase.value.thumbnail
     )
-    toast.success('Database duplicated successfully')
+    toast.success('📋 Database duplicated successfully')
   } catch (error) {
     toast.error('Failed to duplicate database')
   }
@@ -263,7 +275,7 @@ const exportDatabase = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('Database exported successfully')
+    toast.success('📥 Database exported successfully')
   } catch (error) {
     toast.error('Failed to export database')
   }
@@ -276,7 +288,7 @@ const deleteDatabase = async () => {
   if (confirm(`Are you sure you want to delete "${selectedDatabase.value.name}"? This action cannot be undone.`)) {
     try {
       await databaseStore.deleteDatabase(selectedDatabase.value.id)
-      toast.success('Database deleted successfully')
+      toast.success('🗑️ Database deleted successfully')
     } catch (error) {
       toast.error('Failed to delete database')
     }
@@ -293,10 +305,13 @@ const handleSaveDatabase = async (databaseData: any) => {
   try {
     if (editingDatabase.value) {
       await databaseStore.updateDatabase(editingDatabase.value.id, databaseData)
-      toast.success('Database updated successfully')
+      toast.success('✅ Database updated successfully')
     } else {
-      await databaseStore.createDatabase(databaseData.name, databaseData.description, databaseData.thumbnail)
-      toast.success('Database created successfully')
+      const newDatabase = await databaseStore.createDatabase(databaseData.name, databaseData.description, databaseData.thumbnail)
+      toast.success('🎉 Database created successfully')
+      
+      // Redirect to the new database
+      await router.push(`/database/${newDatabase.id}`)
     }
     closeCreateModal()
   } catch (error) {

@@ -84,8 +84,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import { InAppPurchaseService, type PurchaseProduct } from '../../services/InAppPurchaseService'
 import { XMarkIcon } from '@heroicons/vue/24/outline'
+
+const router = useRouter()
+const toast = useToast()
 
 const emit = defineEmits<{
   close: []
@@ -104,15 +109,29 @@ const purchaseSelected = async () => {
   isLoading.value = true
 
   try {
+    toast.info('💳 Processing purchase...')
     const result = await InAppPurchaseService.purchaseProduct(selectedProduct.value.id)
     
     if (result.success) {
+      toast.success('🎉 Purchase successful! Welcome to your new plan!')
       emit('success', selectedProduct.value.id)
+      
+      // Redirect to subscription page to see the updated plan
+      setTimeout(async () => {
+        try {
+          await router.push('/subscription')
+        } catch (error) {
+          console.error('Navigation error:', error)
+        }
+      }, 1000)
     } else {
       error.value = result.error || 'Purchase failed'
+      toast.error(`❌ Purchase failed: ${result.error || 'Unknown error'}`)
     }
   } catch (err) {
     error.value = 'An unexpected error occurred'
+    toast.error('❌ An unexpected error occurred during purchase')
+    console.error('Purchase error:', err)
   } finally {
     isLoading.value = false
   }
@@ -123,26 +142,36 @@ const restorePurchases = async () => {
   error.value = ''
 
   try {
+    toast.info('🔄 Restoring purchases...')
     const results = await InAppPurchaseService.restorePurchases()
     const successfulRestores = results.filter(r => r.success)
     
     if (successfulRestores.length > 0) {
+      toast.success(`✅ Restored ${successfulRestores.length} purchase(s)`)
       emit('success', 'restored')
     } else {
       error.value = 'No purchases to restore'
+      toast.warning('⚠️ No purchases found to restore')
     }
   } catch (err) {
     error.value = 'Failed to restore purchases'
+    toast.error('❌ Failed to restore purchases')
+    console.error('Restore error:', err)
   } finally {
     isLoading.value = false
   }
 }
 
 onMounted(async () => {
-  await InAppPurchaseService.initialize()
-  products.value = await InAppPurchaseService.getProducts()
-  
-  // Pre-select premium monthly by default
-  selectedProduct.value = products.value.find(p => p.id === 'premium_monthly') || products.value[0]
+  try {
+    await InAppPurchaseService.initialize()
+    products.value = await InAppPurchaseService.getProducts()
+    
+    // Pre-select premium monthly by default
+    selectedProduct.value = products.value.find(p => p.id === 'premium_monthly') || products.value[0]
+  } catch (error) {
+    console.error('Failed to initialize purchase service:', error)
+    toast.error('Failed to load purchase options')
+  }
 })
 </script>

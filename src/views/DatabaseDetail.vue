@@ -74,7 +74,7 @@
             v-for="table in database.tables"
             :key="table.id"
             class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            @click="$router.push(`/database/${database.id}/table/${table.id}`)"
+            @click="navigateToTable(table.id)"
           >
             <div class="flex items-center space-x-3">
               <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
@@ -133,9 +133,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useDatabaseStore } from '@/stores/database'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { useDatabaseStore } from '@/stores/database'
 import type { Table } from '@/types/database'
 import {
   PlusIcon,
@@ -147,8 +147,9 @@ import LoadingSpinner from '@/components/UI/LoadingSpinner.vue'
 import CreateTableModal from '@/components/Modals/CreateTableModal.vue'
 
 const route = useRoute()
-const databaseStore = useDatabaseStore()
+const router = useRouter()
 const toast = useToast()
+const databaseStore = useDatabaseStore()
 
 const databaseId = route.params.id as string
 const showCreateTableModal = ref(false)
@@ -157,6 +158,16 @@ const editingTable = ref<Table | null>(null)
 const database = computed(() => 
   databaseStore.databases.find(db => db.id === databaseId)
 )
+
+const navigateToTable = async (tableId: string) => {
+  try {
+    await router.push(`/database/${databaseId}/table/${tableId}`)
+    toast.info('📋 Opening table...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open table')
+  }
+}
 
 const getTotalRecords = () => {
   return database.value?.tables?.reduce((total, table) => total + (table.records?.length || 0), 0) || 0
@@ -175,10 +186,13 @@ const handleSaveTable = async (tableData: any) => {
   try {
     if (editingTable.value) {
       await databaseStore.updateTable(editingTable.value.id, tableData)
-      toast.success('Table updated successfully')
+      toast.success('✅ Table updated successfully')
     } else {
-      await databaseStore.createTable(databaseId, tableData.name, tableData.thumbnail)
-      toast.success('Table created successfully')
+      const newTable = await databaseStore.createTable(databaseId, tableData.name, tableData.thumbnail)
+      toast.success('🎉 Table created successfully')
+      
+      // Redirect to the new table
+      await router.push(`/database/${databaseId}/table/${newTable.id}`)
     }
     closeCreateTableModal()
   } catch (error) {

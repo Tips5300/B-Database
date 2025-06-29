@@ -186,7 +186,7 @@
             </div>
           </div>
           <button
-            @click="showPurchaseModal = true"
+            @click="navigateToSubscription"
             class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
             Upgrade
@@ -216,13 +216,6 @@
       </div>
     </div>
 
-    <!-- Purchase Modal -->
-    <PurchaseModal
-      v-if="showPurchaseModal"
-      @close="showPurchaseModal = false"
-      @success="handlePurchaseSuccess"
-    />
-
     <!-- Auth Setup Modal -->
     <BiometricSetup
       v-if="showAuthSetup"
@@ -234,10 +227,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
 import { useDatabaseStore } from '@/stores/database'
-import { useToast } from 'vue-toastification'
 import {
   FingerPrintIcon,
   TrashIcon,
@@ -246,15 +240,14 @@ import {
   ArrowUpTrayIcon
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
-import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
 import BiometricSetup from '@/components/Auth/BiometricSetup.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
 
-const showPurchaseModal = ref(false)
 const showAuthSetup = ref(false)
 
 const toggleCompactMode = () => {
@@ -286,6 +279,16 @@ const resetAuth = () => {
   }
 }
 
+const navigateToSubscription = async () => {
+  try {
+    await router.push('/subscription')
+    toast.info('💎 Opening subscription settings...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open subscription settings')
+  }
+}
+
 const exportAllData = async () => {
   try {
     const blob = await databaseStore.exportData({
@@ -301,7 +304,7 @@ const exportAllData = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('Data exported successfully')
+    toast.success('📥 Data exported successfully')
   } catch (error) {
     toast.error('Failed to export data')
   }
@@ -320,7 +323,7 @@ const importData = () => {
           createTable: true,
           updateExisting: false
         })
-        toast.success('Data imported successfully')
+        toast.success('📤 Data imported successfully')
       } catch (error) {
         toast.error('Failed to import data')
       }
@@ -333,6 +336,7 @@ const clearAllData = () => {
   if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
     // Clear localStorage database
     localStorage.removeItem('database')
+    toast.success('🗑️ All data cleared')
     // Reload the page to reinitialize
     window.location.reload()
   }
@@ -346,11 +350,5 @@ const getPlanDescription = () => {
     enterprise: 'Custom solutions for organizations'
   }
   return descriptions[authStore.subscriptionPlan as keyof typeof descriptions] || 'Unknown plan'
-}
-
-const handlePurchaseSuccess = (productId: string) => {
-  toast.success('Purchase successful!')
-  showPurchaseModal.value = false
-  authStore.updateSubscription('premium') // Update based on actual purchase
 }
 </script>
