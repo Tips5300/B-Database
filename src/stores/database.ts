@@ -14,15 +14,22 @@ export const useDatabaseStore = defineStore('database', () => {
   const currentTable = ref<Table | null>(null)
   const isLoading = ref(false)
 
-  const stats = computed((): DatabaseStats => ({
-    totalDatabases: databases.value.length,
-    totalTables: databases.value.reduce((acc, db) => acc + (db.tables?.length || 0), 0),
-    totalRecords: databases.value.reduce((acc, db) => 
+  const stats = computed((): DatabaseStats => {
+    const totalDatabases = databases.value.length
+    const totalTables = databases.value.reduce((acc, db) => acc + (db.tables?.length || 0), 0)
+    const totalRecords = databases.value.reduce((acc, db) => 
       acc + (db.tables?.reduce((tableAcc, table) => tableAcc + (table.records?.length || 0), 0) || 0), 0
-    ),
-    storageUsed: calculateStorageUsed(),
-    lastBackup: new Date()
-  }))
+    )
+    const storageUsed = calculateStorageUsed()
+    
+    return {
+      totalDatabases,
+      totalTables,
+      totalRecords,
+      storageUsed,
+      lastBackup: new Date()
+    }
+  })
 
   const calculateStorageUsed = () => {
     try {

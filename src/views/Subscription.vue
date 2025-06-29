@@ -209,6 +209,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useDatabaseStore } from '@/stores/database'
 import { PaymentService } from '@/services/PaymentService'
 import { useToast } from 'vue-toastification'
 import {
@@ -224,15 +225,16 @@ import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const databaseStore = useDatabaseStore()
 const toast = useToast()
 
 const showPurchaseModal = ref(false)
 const usageStats = ref({
   currentUsage: {
-    databases: 2,
-    tables: 8,
-    records: 150,
-    storage: 25 * 1024 * 1024 // 25MB
+    databases: 0,
+    tables: 0,
+    records: 0,
+    storage: 0
   },
   limits: {
     databases: 3,
@@ -557,7 +559,6 @@ const formatDate = (date: Date) => {
 }
 
 const selectPlan = (plan: any) => {
-  toast.info(`💎 Selecting ${plan.name} plan...`)
   showPurchaseModal.value = true
 }
 
@@ -574,14 +575,15 @@ const handlePurchaseSuccess = async (productId: string) => {
     const newPlan = planMap[productId] || 'premium'
     authStore.updateSubscription(newPlan)
     
-    toast.success('🎉 Subscription updated successfully! Welcome to your new plan!')
     showPurchaseModal.value = false
+    
+    // Reload usage stats with new plan
+    await loadUsageStats()
     
     // Redirect to dashboard to see the updated features
     setTimeout(async () => {
       try {
         await router.push('/')
-        toast.info('🏠 Redirecting to dashboard to explore your new features...')
       } catch (error) {
         console.error('Navigation error:', error)
       }
@@ -592,13 +594,22 @@ const handlePurchaseSuccess = async (productId: string) => {
   }
 }
 
-onMounted(async () => {
+const loadUsageStats = async () => {
   try {
     usageStats.value = await PaymentService.getUsageStats(authStore.deviceId)
-    toast.info('📊 Usage statistics loaded')
   } catch (error) {
     console.error('Failed to load usage stats:', error)
-    toast.warning('⚠️ Could not load usage statistics')
+    // Fallback to real database stats
+    usageStats.value.currentUsage = {
+      databases: databaseStore.stats.totalDatabases,
+      tables: databaseStore.stats.totalTables,
+      records: databaseStore.stats.totalRecords,
+      storage: databaseStore.stats.storageUsed
+    }
   }
+}
+
+onMounted(async () => {
+  await loadUsageStats()
 })
 </script>

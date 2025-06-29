@@ -80,7 +80,7 @@
                   class="w-full h-full object-cover"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center text-lg">
-                  📊
+                  {{ database.emoji || '📊' }}
                 </div>
               </div>
               <div>
@@ -235,7 +235,6 @@ const formatDate = (date?: Date) => {
 const navigateToDatabases = async () => {
   try {
     await router.push('/databases')
-    toast.info('📊 Opening databases...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open databases')
@@ -245,7 +244,6 @@ const navigateToDatabases = async () => {
 const navigateToDatabase = async (databaseId: string) => {
   try {
     await router.push(`/database/${databaseId}`)
-    toast.info('📊 Opening database...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open database')
@@ -253,7 +251,7 @@ const navigateToDatabase = async (databaseId: string) => {
 }
 
 const handleMenu = () => {
-  toast.info('📊 Analytics menu coming soon')
+  toast.info('Analytics menu coming soon')
 }
 
 const exportAnalytics = async () => {
@@ -283,7 +281,7 @@ const exportAnalytics = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('📥 Analytics report exported successfully')
+    toast.success('Analytics report exported successfully')
   } catch (error) {
     toast.error('Failed to export report')
     console.error('Export error:', error)
@@ -291,6 +289,6 @@ const exportAnalytics = async () => {
 }
 
 const scheduleBackup = () => {
-  toast.success('💾 Backup scheduled successfully')
+  toast.success('Backup scheduled successfully')
 }
 </script>

@@ -1,4 +1,5 @@
 import { SubscriptionPlan } from '@/types/auth'
+import { useDatabaseStore } from '@/stores/database'
 
 export interface PaymentMethod {
   id: string
@@ -265,11 +266,20 @@ Thank you for your business!
       daysRemaining: number
     }
   }> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Get real data from database store
+    const databaseStore = useDatabaseStore()
     
+    // Get current subscription plan
     const subscription = await this.getSubscription(userId)
     const plan = subscription?.plan || SubscriptionPlan.FREE
+    
+    // Calculate real usage
+    const realUsage = {
+      databases: databaseStore.stats.totalDatabases,
+      tables: databaseStore.stats.totalTables,
+      records: databaseStore.stats.totalRecords,
+      storage: databaseStore.stats.storageUsed
+    }
     
     const limits = {
       [SubscriptionPlan.FREE]: {
@@ -299,17 +309,12 @@ Thank you for your business!
     }
     
     return {
-      currentUsage: {
-        databases: 2,
-        tables: 8,
-        records: 150,
-        storage: 25 * 1024 * 1024 // 25MB
-      },
+      currentUsage: realUsage,
       limits: limits[plan],
       billingCycle: {
         start: subscription?.currentPeriodStart || new Date(),
         end: subscription?.currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        daysRemaining: subscription ? Math.ceil((subscription.currentPeriodEnd.getTime() - Date.now()) / (24 * 60 * 60 * 1000)) : 0
+        daysRemaining: subscription ? Math.ceil((subscription.currentPeriodEnd.getTime() - Date.now()) / (24 * 60 * 60 * 1000)) : 30
       }
     }
   }

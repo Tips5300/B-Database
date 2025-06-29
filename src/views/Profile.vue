@@ -283,7 +283,6 @@ const resetAllData = async () => {
 }
 
 const handlePurchaseSuccess = (productId: string) => {
-  toast.success('Purchase successful!')
   showPurchaseModal.value = false
   authStore.updateSubscription('premium')
 }
