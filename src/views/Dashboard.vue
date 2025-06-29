@@ -76,7 +76,7 @@
         </h2>
         <div class="grid grid-cols-2 gap-3">
           <button
-            @click="$router.push('/databases')"
+            @click="navigateToDatabases"
             class="flex flex-col items-center p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
           >
             <PlusIcon class="w-8 h-8 text-primary-600 dark:text-primary-400 mb-2" />
@@ -96,7 +96,7 @@
           </button>
 
           <button
-            @click="showPurchaseModal = true"
+            @click="navigateToSubscription"
             class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
           >
             <StarIcon class="w-8 h-8 text-yellow-600 dark:text-yellow-400 mb-2" />
@@ -127,7 +127,7 @@
           <ServerStackIcon class="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <p class="text-gray-500 dark:text-gray-400 mb-4">No databases yet</p>
           <button
-            @click="$router.push('/databases')"
+            @click="navigateToDatabases"
             class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Create Your First Database
@@ -139,7 +139,7 @@
             v-for="database in recentDatabases"
             :key="database.id"
             class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-            @click="$router.push(`/database/${database.id}`)"
+            @click="navigateToDatabase(database.id)"
           >
             <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
               <img
@@ -165,13 +165,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Modals -->
-    <PurchaseModal
-      v-if="showPurchaseModal"
-      @close="showPurchaseModal = false"
-      @success="handlePurchaseSuccess"
-    />
 
     <!-- Dashboard Menu -->
     <div
@@ -252,13 +245,11 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
-import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
 
 const router = useRouter()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
 
-const showPurchaseModal = ref(false)
 const showDashboardMenu = ref(false)
 
 const recentDatabases = computed(() => 
@@ -274,32 +265,86 @@ const formatBytes = (bytes: number) => {
 }
 
 const handleSearch = () => {
-  // Implement search functionality
-  toast.info('Search functionality coming soon')
+  toast.info('🔍 Search functionality coming soon')
 }
 
 const handleMenu = () => {
   showDashboardMenu.value = true
 }
 
-const navigateToProfile = () => {
-  showDashboardMenu.value = false
-  router.push('/profile')
+const navigateToDatabases = async () => {
+  try {
+    await router.push('/databases')
+    toast.info('📊 Opening databases...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open databases')
+  }
 }
 
-const navigateToSettings = () => {
-  showDashboardMenu.value = false
-  router.push('/settings')
+const navigateToDatabase = async (databaseId: string) => {
+  try {
+    await router.push(`/database/${databaseId}`)
+    toast.info('📊 Opening database...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open database')
+  }
 }
 
-const navigateToAnalytics = () => {
+const navigateToSubscription = async () => {
+  try {
+    await router.push('/subscription')
+    toast.info('💎 Opening subscription...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open subscription')
+  }
   showDashboardMenu.value = false
-  router.push('/analytics')
 }
 
-const navigateToHelp = () => {
+const navigateToProfile = async () => {
   showDashboardMenu.value = false
-  router.push('/help')
+  try {
+    await router.push('/profile')
+    toast.info('👤 Opening profile...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open profile')
+  }
+}
+
+const navigateToSettings = async () => {
+  showDashboardMenu.value = false
+  try {
+    await router.push('/settings')
+    toast.info('⚙️ Opening settings...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open settings')
+  }
+}
+
+const navigateToAnalytics = async () => {
+  showDashboardMenu.value = false
+  try {
+    await router.push('/analytics')
+    toast.info('📊 Opening analytics...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open analytics')
+  }
+}
+
+const navigateToHelp = async () => {
+  showDashboardMenu.value = false
+  try {
+    await router.push('/help')
+    toast.info('❓ Opening help...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open help')
+  }
 }
 
 const exportAllData = async () => {
@@ -317,15 +362,10 @@ const exportAllData = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('Data exported successfully')
+    toast.success('📥 Data exported successfully')
   } catch (error) {
     toast.error('Failed to export data')
+    console.error('Export error:', error)
   }
-}
-
-const handlePurchaseSuccess = (productId: string) => {
-  toast.success('Purchase successful!')
-  showPurchaseModal.value = false
-  // Update subscription status
 }
 </script>

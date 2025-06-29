@@ -332,15 +332,17 @@ const filteredRecords = computed(() => {
 const editRecord = (record: Record) => {
   editingRecord.value = record
   showAddRecordModal.value = true
+  toast.info('📝 Opening record for editing...')
 }
 
 const deleteRecord = async (record: Record) => {
   if (confirm('Are you sure you want to delete this record?')) {
     try {
       await databaseStore.deleteRecord(record.id)
-      toast.success('Record deleted successfully')
+      toast.success('🗑️ Record deleted successfully')
     } catch (error) {
       toast.error('Failed to delete record')
+      console.error('Delete record error:', error)
     }
   }
 }
@@ -348,15 +350,17 @@ const deleteRecord = async (record: Record) => {
 const editField = (field: Field) => {
   editingField.value = field
   showAddFieldModal.value = true
+  toast.info('⚙️ Opening field for editing...')
 }
 
 const deleteField = async (field: Field) => {
   if (confirm(`Are you sure you want to delete the field "${field.name}"? This will also delete all data in this field.`)) {
     try {
       await databaseStore.deleteField(field.id)
-      toast.success('Field deleted successfully')
+      toast.success('🗑️ Field deleted successfully')
     } catch (error) {
       toast.error('Failed to delete field')
+      console.error('Delete field error:', error)
     }
   }
 }
@@ -364,9 +368,10 @@ const deleteField = async (field: Field) => {
 const updateRecord = async (recordId: string, data: any) => {
   try {
     await databaseStore.updateRecord(recordId, data)
-    toast.success('Record updated successfully')
+    toast.success('✅ Record updated successfully')
   } catch (error) {
     toast.error('Failed to update record')
+    console.error('Update record error:', error)
   }
 }
 
@@ -384,14 +389,15 @@ const handleSaveRecord = async (recordData: any) => {
   try {
     if (editingRecord.value) {
       await databaseStore.updateRecord(editingRecord.value.id, recordData)
-      toast.success('Record updated successfully')
+      toast.success('✅ Record updated successfully')
     } else {
       await databaseStore.addRecord(tableId, recordData)
-      toast.success('Record added successfully')
+      toast.success('🎉 Record added successfully')
     }
     closeRecordModal()
   } catch (error) {
     toast.error('Failed to save record')
+    console.error('Save record error:', error)
   }
 }
 
@@ -399,26 +405,27 @@ const handleSaveField = async (fieldData: any) => {
   try {
     if (editingField.value) {
       await databaseStore.updateField(editingField.value.id, fieldData)
-      toast.success('Field updated successfully')
+      toast.success('✅ Field updated successfully')
     } else {
       await databaseStore.addField(tableId, fieldData)
-      toast.success('Field added successfully')
+      toast.success('🎉 Field added successfully')
     }
     closeFieldModal()
   } catch (error) {
     toast.error('Failed to save field')
+    console.error('Save field error:', error)
   }
 }
 
 const applyFilters = (filters: FilterCondition[]) => {
   activeFilters.value = filters
   showFilterModal.value = false
-  toast.success(`Applied ${filters.length} filter(s)`)
+  toast.success(`🔍 Applied ${filters.length} filter(s)`)
 }
 
 const clearFilters = () => {
   activeFilters.value = []
-  toast.success('Filters cleared')
+  toast.success('🧹 Filters cleared')
 }
 
 const exportTable = async () => {
@@ -442,9 +449,10 @@ const exportTable = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('Table exported successfully')
+    toast.success('📥 Table exported successfully')
   } catch (error) {
     toast.error('Failed to export table')
+    console.error('Export table error:', error)
   }
   showTableMenu.value = false
 }
@@ -475,9 +483,13 @@ const duplicateTable = async () => {
       await databaseStore.addRecord(newTable.id, record.data)
     }
     
-    toast.success('Table duplicated successfully with all records')
+    toast.success('📋 Table duplicated successfully with all records')
+    
+    // Navigate to the duplicated table
+    await router.push(`/database/${databaseId}/table/${newTable.id}`)
   } catch (error) {
     toast.error('Failed to duplicate table')
+    console.error('Duplicate table error:', error)
   }
   showTableMenu.value = false
 }
@@ -488,10 +500,11 @@ const deleteTable = async () => {
   if (confirm(`Are you sure you want to delete the table "${table.value.name}"? This action cannot be undone.`)) {
     try {
       await databaseStore.deleteTable(table.value.id)
-      toast.success('Table deleted successfully')
-      router.push(`/database/${databaseId}`)
+      toast.success('🗑️ Table deleted successfully')
+      await router.push(`/database/${databaseId}`)
     } catch (error) {
       toast.error('Failed to delete table')
+      console.error('Delete table error:', error)
     }
   }
   showTableMenu.value = false

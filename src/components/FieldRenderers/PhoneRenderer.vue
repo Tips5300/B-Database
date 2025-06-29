@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useToast } from 'vue-toastification'
 import type { Field } from '@/types/database'
 import {
   PhoneIcon
@@ -80,6 +81,7 @@ const emit = defineEmits<{
   'update:value': [value: string]
 }>()
 
+const toast = useToast()
 const phoneError = ref('')
 
 const updateValue = (event: Event) => {
@@ -117,12 +119,14 @@ const formatPhone = (phone: string) => {
 const callPhone = () => {
   if (props.value) {
     window.location.href = `tel:${props.value}`
+    toast.success('📞 Opening phone app...')
   }
 }
 
 const sendSMS = () => {
   if (props.value) {
     window.location.href = `sms:${props.value}`
+    toast.success('💬 Opening SMS app...')
   }
 }
 
@@ -130,9 +134,10 @@ const copyPhone = async () => {
   if (props.value) {
     try {
       await navigator.clipboard.writeText(props.value)
-      // Could show a toast notification here
+      toast.success('📞 Phone number copied to clipboard!')
     } catch (error) {
       console.error('Failed to copy phone:', error)
+      toast.error('Failed to copy phone number')
     }
   }
 }

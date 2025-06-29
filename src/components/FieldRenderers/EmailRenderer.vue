@@ -56,6 +56,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useToast } from 'vue-toastification'
 import type { Field } from '@/types/database'
 import {
   EnvelopeIcon
@@ -74,6 +75,7 @@ const emit = defineEmits<{
   'update:value': [value: string]
 }>()
 
+const toast = useToast()
 const emailError = ref('')
 
 const updateValue = (event: Event) => {
@@ -98,6 +100,7 @@ const isValidEmail = (email: string) => {
 const sendEmail = () => {
   if (props.value) {
     window.location.href = `mailto:${props.value}`
+    toast.success('📧 Opening email client...')
   }
 }
 
@@ -105,9 +108,10 @@ const copyEmail = async () => {
   if (props.value) {
     try {
       await navigator.clipboard.writeText(props.value)
-      // Could show a toast notification here
+      toast.success('📧 Email copied to clipboard!')
     } catch (error) {
       console.error('Failed to copy email:', error)
+      toast.error('Failed to copy email')
     }
   }
 }

@@ -55,14 +55,21 @@
         
         <div v-if="databaseStore.databases.length === 0" class="text-center py-8">
           <ChartBarIcon class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p class="text-gray-500 dark:text-gray-400">No data to analyze yet</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">No data to analyze yet</p>
+          <button
+            @click="navigateToDatabases"
+            class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Your First Database
+          </button>
         </div>
         
         <div v-else class="space-y-4">
           <div
             v-for="database in databaseStore.databases"
             :key="database.id"
-            class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+            class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            @click="navigateToDatabase(database.id)"
           >
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden">
@@ -158,6 +165,7 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { useToast } from 'vue-toastification'
 import type { Database } from '@/database/entities/Database'
@@ -168,6 +176,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
 
+const router = useRouter()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
 
@@ -223,8 +232,28 @@ const formatDate = (date?: Date) => {
   }).format(new Date(date))
 }
 
+const navigateToDatabases = async () => {
+  try {
+    await router.push('/databases')
+    toast.info('📊 Opening databases...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open databases')
+  }
+}
+
+const navigateToDatabase = async (databaseId: string) => {
+  try {
+    await router.push(`/database/${databaseId}`)
+    toast.info('📊 Opening database...')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open database')
+  }
+}
+
 const handleMenu = () => {
-  toast.info('Analytics menu coming soon')
+  toast.info('📊 Analytics menu coming soon')
 }
 
 const exportAnalytics = async () => {
@@ -254,13 +283,14 @@ const exportAnalytics = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('Analytics report exported')
+    toast.success('📥 Analytics report exported successfully')
   } catch (error) {
     toast.error('Failed to export report')
+    console.error('Export error:', error)
   }
 }
 
 const scheduleBackup = () => {
-  toast.success('Backup scheduled successfully')
+  toast.success('💾 Backup scheduled successfully')
 }
 </script>

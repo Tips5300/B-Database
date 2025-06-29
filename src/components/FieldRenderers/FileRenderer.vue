@@ -12,6 +12,7 @@
               :href="value.url"
               :download="value.name"
               class="text-primary-600 dark:text-primary-400 hover:underline text-sm truncate block"
+              @click="handleDownload"
             >
               {{ value.name }}
             </a>
@@ -103,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useToast } from 'vue-toastification'
 import type { Field } from '@/types/database'
 import {
   DocumentIcon,
@@ -131,6 +133,7 @@ const emit = defineEmits<{
   'update:value': [value: any]
 }>()
 
+const toast = useToast()
 const urlInput = ref('')
 const fileError = ref('')
 const maxFileSize = props.field.options?.maxFileSize || 10 * 1024 * 1024 // 10MB
@@ -147,12 +150,14 @@ const handleFileUpload = (event: Event) => {
   if (file) {
     if (file.size > maxFileSize) {
       fileError.value = `File size must be less than ${formatFileSize(maxFileSize)}`
+      toast.error(`File too large! Maximum size is ${formatFileSize(maxFileSize)}`)
       return
     }
     
     const allowedTypes = props.field.options?.fileTypes || []
     if (allowedTypes.length > 0 && !allowedTypes.some(type => file.type.includes(type))) {
       fileError.value = `File type not allowed. Supported types: ${allowedTypes.join(', ')}`
+      toast.error('File type not allowed')
       return
     }
     
@@ -166,6 +171,7 @@ const handleFileUpload = (event: Event) => {
     
     emit('update:value', fileData)
     fileError.value = ''
+    toast.success('📎 File uploaded successfully')
   }
 }
 
@@ -188,12 +194,18 @@ const handleUrlInput = () => {
     emit('update:value', fileData)
     urlInput.value = ''
     fileError.value = ''
+    toast.success('🔗 File URL added successfully')
   }
 }
 
 const removeFile = () => {
   emit('update:value', null)
   fileError.value = ''
+  toast.info('🗑️ File removed')
+}
+
+const handleDownload = () => {
+  toast.success('📥 Starting download...')
 }
 
 const getFileIcon = (file: any) => {

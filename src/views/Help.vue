@@ -225,6 +225,8 @@ const toggleFaq = (index: number) => {
 }
 
 const openQuickHelp = (item: any) => {
+  toast.info(`📖 Opening ${item.title}...`)
+  
   switch (item.action) {
     case 'getting-started':
       window.open('https://docs.example.com/getting-started', '_blank', 'noopener,noreferrer')
@@ -245,17 +247,16 @@ const sendEmail = () => {
   const subject = encodeURIComponent('Database Manager Support Request')
   const body = encodeURIComponent('Please describe your issue or question:\n\n')
   window.location.href = `mailto:support@example.com?subject=${subject}&body=${body}`
+  toast.success('📧 Opening email client...')
 }
 
 const openChat = () => {
-  // Open a new tab to a chat service
   window.open('https://tawk.to/chat/example', '_blank', 'noopener,noreferrer')
-  toast.success('Opening live chat in new tab')
+  toast.success('💬 Opening live chat in new tab')
 }
 
 const reportBug = () => {
-  // Open a new tab to bug reporting form
   window.open('https://github.com/example/database-manager/issues/new', '_blank', 'noopener,noreferrer')
-  toast.success('Opening bug report form in new tab')
+  toast.success('🐛 Opening bug report form in new tab')
 }
 </script>

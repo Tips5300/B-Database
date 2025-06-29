@@ -207,6 +207,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { PaymentService } from '@/services/PaymentService'
 import { useToast } from 'vue-toastification'
@@ -221,6 +222,7 @@ import Badge from '@/components/UI/Badge.vue'
 import ProgressBar from '@/components/UI/ProgressBar.vue'
 import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
 
@@ -555,30 +557,48 @@ const formatDate = (date: Date) => {
 }
 
 const selectPlan = (plan: any) => {
+  toast.info(`💎 Selecting ${plan.name} plan...`)
   showPurchaseModal.value = true
 }
 
-const handlePurchaseSuccess = (productId: string) => {
-  toast.success('Subscription updated successfully!')
-  showPurchaseModal.value = false
-  
-  // Update subscription based on product
-  const planMap: { [key: string]: string } = {
-    'premium_monthly': 'premium',
-    'premium_yearly': 'premium',
-    'professional_monthly': 'professional',
-    'enterprise_monthly': 'enterprise'
+const handlePurchaseSuccess = async (productId: string) => {
+  try {
+    // Update subscription based on product
+    const planMap: { [key: string]: string } = {
+      'premium_monthly': 'premium',
+      'premium_yearly': 'premium',
+      'professional_monthly': 'professional',
+      'enterprise_monthly': 'enterprise'
+    }
+    
+    const newPlan = planMap[productId] || 'premium'
+    authStore.updateSubscription(newPlan)
+    
+    toast.success('🎉 Subscription updated successfully! Welcome to your new plan!')
+    showPurchaseModal.value = false
+    
+    // Redirect to dashboard to see the updated features
+    setTimeout(async () => {
+      try {
+        await router.push('/')
+        toast.info('🏠 Redirecting to dashboard to explore your new features...')
+      } catch (error) {
+        console.error('Navigation error:', error)
+      }
+    }, 2000)
+  } catch (error) {
+    console.error('Subscription update error:', error)
+    toast.error('Failed to update subscription')
   }
-  
-  const newPlan = planMap[productId] || 'premium'
-  authStore.updateSubscription(newPlan)
 }
 
 onMounted(async () => {
   try {
     usageStats.value = await PaymentService.getUsageStats(authStore.deviceId)
+    toast.info('📊 Usage statistics loaded')
   } catch (error) {
     console.error('Failed to load usage stats:', error)
+    toast.warning('⚠️ Could not load usage statistics')
   }
 })
 </script>
