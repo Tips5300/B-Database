@@ -18,11 +18,9 @@ export class BiometricAuthService {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        // Native platform - use Capacitor Biometric Auth
         const result = await BiometricAuth.checkBiometry();
         this.isSupported = result.isAvailable;
       } else {
-        // Web platform - use WebAuthn
         if (typeof window !== 'undefined' && window.PublicKeyCredential) {
           const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
           this.isSupported = available;
@@ -49,7 +47,6 @@ export class BiometricAuthService {
       }
 
       if (Capacitor.isNativePlatform()) {
-        // Native platform - use Capacitor Biometric Auth
         try {
           const result = await BiometricAuth.authenticate({
             reason,
@@ -80,16 +77,22 @@ export class BiometricAuthService {
           };
         }
       } else {
-        // Web platform - use WebAuthn
+        // Web platform - use WebAuthn with stored credential
         const challenge = new Uint8Array(32);
         crypto.getRandomValues(challenge);
+
+        const credentialId = localStorage.getItem('biometric_credential_id');
+        const allowCredentials = credentialId ? [{
+          id: Uint8Array.from(atob(credentialId), c => c.charCodeAt(0)),
+          type: 'public-key' as const
+        }] : [];
 
         const credentialRequestOptions: CredentialRequestOptions = {
           publicKey: {
             challenge,
             timeout: 60000,
             userVerification: 'required',
-            allowCredentials: []
+            allowCredentials
           }
         };
 
@@ -139,7 +142,6 @@ export class BiometricAuthService {
       }
 
       if (Capacitor.isNativePlatform()) {
-        // Native platform - check if biometry is enrolled
         const biometryInfo = await BiometricAuth.checkBiometry();
         
         if (!biometryInfo.biometryType || biometryInfo.biometryType === BiometryType.none) {
@@ -149,7 +151,6 @@ export class BiometricAuthService {
           };
         }
 
-        // Store that biometric is set up
         localStorage.setItem('biometric_enrolled', 'true');
         
         return {
@@ -157,7 +158,6 @@ export class BiometricAuthService {
           biometryType: this.mapBiometryType(biometryInfo.biometryType)
         };
       } else {
-        // Web platform - use WebAuthn credential creation
         const challenge = new Uint8Array(32);
         crypto.getRandomValues(challenge);
 
@@ -192,7 +192,9 @@ export class BiometricAuthService {
         const credential = await navigator.credentials.create(credentialCreationOptions);
         
         if (credential) {
-          localStorage.setItem('biometric_credential_id', credential.id);
+          // Store credential ID as base64
+          const credentialId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+          localStorage.setItem('biometric_credential_id', credentialId);
           
           return {
             success: true,

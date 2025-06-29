@@ -15,6 +15,9 @@ export class Table {
   @Column('text', { nullable: true })
   thumbnail?: string;
 
+  @Column('text', { nullable: true })
+  emoji?: string;
+
   @Column('text')
   databaseId!: string;
 

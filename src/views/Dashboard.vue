@@ -86,12 +86,12 @@
           </button>
 
           <button
-            @click="showImportModal = true"
-            class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            @click="exportAllData"
+            class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
           >
-            <ArrowUpTrayIcon class="w-8 h-8 text-green-600 dark:text-green-400 mb-2" />
-            <span class="text-sm font-medium text-green-600 dark:text-green-400">
-              Import Data
+            <ArrowDownTrayIcon class="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" />
+            <span class="text-sm font-medium text-blue-600 dark:text-blue-400">
+              Export All
             </span>
           </button>
 
@@ -106,12 +106,12 @@
           </button>
 
           <button
-            @click="exportAllData"
-            class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            @click="navigateToSettings"
+            class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
           >
-            <ArrowDownTrayIcon class="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" />
-            <span class="text-sm font-medium text-blue-600 dark:text-blue-400">
-              Export All
+            <CogIcon class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2" />
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Settings
             </span>
           </button>
         </div>
@@ -141,16 +141,15 @@
             class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
             @click="navigateToDatabase(database.id)"
           >
-            <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0">
+            <div class="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+              <span v-if="database.emoji" class="text-xl">{{ database.emoji }}</span>
               <img
-                v-if="database.thumbnail"
+                v-else-if="database.thumbnail"
                 :src="database.thumbnail"
                 :alt="database.name"
                 class="w-full h-full object-cover"
               />
-              <div v-else class="w-full h-full flex items-center justify-center text-xl">
-                📊
-              </div>
+              <span v-else class="text-xl">📊</span>
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="font-medium text-gray-900 dark:text-white truncate">
@@ -186,14 +185,6 @@
           >
             <UserIcon class="w-5 h-5 text-gray-400" />
             <span class="text-gray-900 dark:text-white">Profile</span>
-          </button>
-          
-          <button
-            @click="navigateToSettings"
-            class="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <CogIcon class="w-5 h-5 text-gray-400" />
-            <span class="text-gray-900 dark:text-white">Settings</span>
           </button>
           
           <button
@@ -235,12 +226,11 @@ import {
   DocumentTextIcon,
   CloudIcon,
   PlusIcon,
-  ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   StarIcon,
+  CogIcon,
   ChevronRightIcon,
   UserIcon,
-  CogIcon,
   ChartBarIcon,
   QuestionMarkCircleIcon
 } from '@heroicons/vue/24/outline'
@@ -265,7 +255,8 @@ const formatBytes = (bytes: number) => {
 }
 
 const handleSearch = () => {
-  toast.info('🔍 Search functionality coming soon')
+  // Navigate to databases with search enabled
+  router.push('/databases')
 }
 
 const handleMenu = () => {
@@ -275,7 +266,6 @@ const handleMenu = () => {
 const navigateToDatabases = async () => {
   try {
     await router.push('/databases')
-    toast.info('📊 Opening databases...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open databases')
@@ -285,7 +275,6 @@ const navigateToDatabases = async () => {
 const navigateToDatabase = async (databaseId: string) => {
   try {
     await router.push(`/database/${databaseId}`)
-    toast.info('📊 Opening database...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open database')
@@ -295,10 +284,19 @@ const navigateToDatabase = async (databaseId: string) => {
 const navigateToSubscription = async () => {
   try {
     await router.push('/subscription')
-    toast.info('💎 Opening subscription...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open subscription')
+  }
+  showDashboardMenu.value = false
+}
+
+const navigateToSettings = async () => {
+  try {
+    await router.push('/settings')
+  } catch (error) {
+    console.error('Navigation error:', error)
+    toast.error('Failed to open settings')
   }
   showDashboardMenu.value = false
 }
@@ -307,21 +305,9 @@ const navigateToProfile = async () => {
   showDashboardMenu.value = false
   try {
     await router.push('/profile')
-    toast.info('👤 Opening profile...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open profile')
-  }
-}
-
-const navigateToSettings = async () => {
-  showDashboardMenu.value = false
-  try {
-    await router.push('/settings')
-    toast.info('⚙️ Opening settings...')
-  } catch (error) {
-    console.error('Navigation error:', error)
-    toast.error('Failed to open settings')
   }
 }
 
@@ -329,7 +315,6 @@ const navigateToAnalytics = async () => {
   showDashboardMenu.value = false
   try {
     await router.push('/analytics')
-    toast.info('📊 Opening analytics...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open analytics')
@@ -340,7 +325,6 @@ const navigateToHelp = async () => {
   showDashboardMenu.value = false
   try {
     await router.push('/help')
-    toast.info('❓ Opening help...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open help')
@@ -362,7 +346,7 @@ const exportAllData = async () => {
     a.click()
     URL.revokeObjectURL(url)
     
-    toast.success('📥 Data exported successfully')
+    toast.success('Data exported successfully')
   } catch (error) {
     toast.error('Failed to export data')
     console.error('Export error:', error)

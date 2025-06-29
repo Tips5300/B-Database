@@ -138,18 +138,14 @@ const authenticateWithBiometric = async () => {
   isLoading.value = true
 
   try {
-    toast.info('🔐 Authenticating with biometric...')
     const result = await BiometricAuthService.authenticate()
     if (result.success) {
-      toast.success('✅ Biometric authentication successful!')
       emit('success')
     } else {
       error.value = result.error || 'Biometric authentication failed'
-      toast.error(`❌ Biometric authentication failed: ${result.error || 'Unknown error'}`)
     }
   } catch (err) {
     error.value = 'Authentication failed'
-    toast.error('❌ Biometric authentication failed unexpectedly')
     console.error('Biometric authentication error:', err)
   } finally {
     isLoading.value = false
@@ -161,20 +157,16 @@ const handlePinInput = async () => {
     error.value = ''
     
     try {
-      toast.info('🔐 Verifying PIN...')
       const isValid = await PinAuthService.verifyPin(pin.value)
       if (isValid) {
-        toast.success('✅ PIN authentication successful!')
         emit('success')
       } else {
         error.value = 'Invalid PIN'
-        toast.error('❌ Invalid PIN entered')
         pin.value = ''
         updateLockoutStatus()
       }
     } catch (err) {
       error.value = 'PIN verification failed'
-      toast.error('❌ PIN verification failed unexpectedly')
       pin.value = ''
       console.error('PIN verification error:', err)
     }
@@ -185,12 +177,10 @@ const switchAuthMethod = () => {
   error.value = ''
   pin.value = ''
   authMethod.value = authMethod.value === 'biometric' ? 'pin' : 'biometric'
-  toast.info(`🔄 Switched to ${authMethod.value === 'biometric' ? 'biometric' : 'PIN'} authentication`)
 }
 
 const resetAuth = () => {
   if (confirm('This will reset all authentication settings. You will need to set up authentication again. Continue?')) {
-    toast.warning('🔄 Resetting authentication settings...')
     emit('reset')
   }
 }
@@ -200,10 +190,7 @@ const updateLockoutStatus = () => {
   isLockedOut.value = PinAuthService.isLockedOut()
   
   if (isLockedOut.value) {
-    toast.error(`🔒 Account locked due to too many failed attempts`)
     updateLockoutTimer()
-  } else if (remainingAttempts.value < 5) {
-    toast.warning(`⚠️ ${remainingAttempts.value} attempt${remainingAttempts.value !== 1 ? 's' : ''} remaining`)
   }
 }
 
@@ -217,7 +204,6 @@ const updateLockoutTimer = () => {
       isLockedOut.value = false
       remainingAttempts.value = 5
       lockoutTimeRemaining.value = ''
-      toast.success('🔓 Account unlocked - you can try again')
     }
   }
   updateTimer()
@@ -230,17 +216,12 @@ onMounted(async () => {
     // Determine default auth method
     if (biometricAvailable.value && BiometricAuthService.hasCredential()) {
       authMethod.value = 'biometric'
-      toast.info('🔐 Ready for biometric authentication')
     } else if (PinAuthService.hasPinSet()) {
       authMethod.value = 'pin'
       updateLockoutStatus()
-      if (!isLockedOut.value) {
-        toast.info('🔢 Ready for PIN authentication')
-      }
     }
   } catch (error) {
     console.error('Error initializing auth screen:', error)
-    toast.error('⚠️ Error initializing authentication')
   }
 })
 

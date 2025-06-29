@@ -29,6 +29,20 @@
         </div>
 
         <div>
+          <label for="emoji" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Emoji (Optional)
+          </label>
+          <input
+            id="emoji"
+            v-model="formData.emoji"
+            type="text"
+            maxlength="2"
+            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-center text-2xl"
+            placeholder="📊"
+          />
+        </div>
+
+        <div>
           <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Description (Optional)
           </label>
@@ -95,6 +109,7 @@ const emit = defineEmits<{
 const formData = reactive({
   name: '',
   description: '',
+  emoji: '',
   thumbnail: '',
   isEncrypted: false
 })
@@ -107,6 +122,7 @@ onMounted(() => {
   if (props.database) {
     formData.name = props.database.name
     formData.description = props.database.description || ''
+    formData.emoji = props.database.emoji || ''
     formData.thumbnail = props.database.thumbnail || ''
     formData.isEncrypted = props.database.isEncrypted
   }

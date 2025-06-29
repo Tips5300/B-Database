@@ -105,27 +105,6 @@
   }
 }
 
-/* Toast customization */
-.Vue-Toastification__toast {
-  @apply rounded-lg shadow-lg;
-}
-
-.Vue-Toastification__toast--success {
-  @apply bg-green-500;
-}
-
-.Vue-Toastification__toast--error {
-  @apply bg-red-500;
-}
-
-.Vue-Toastification__toast--warning {
-  @apply bg-yellow-500;
-}
-
-.Vue-Toastification__toast--info {
-  @apply bg-blue-500;
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .form-input {
@@ -137,6 +116,34 @@
   input[type="tel"],
   input[type="url"] {
     @apply text-base; /* Prevent zoom on iOS */
+  }
+
+  /* Enhanced touch targets */
+  button, .btn-primary, .btn-secondary, .btn-danger {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Better spacing for mobile */
+  .p-4 {
+    @apply p-3;
+  }
+
+  .space-y-6 > * + * {
+    @apply mt-4;
+  }
+
+  .space-y-4 > * + * {
+    @apply mt-3;
+  }
+
+  /* Mobile-friendly modals */
+  .fixed.inset-0 .max-w-md {
+    @apply mx-3;
+  }
+
+  /* Better mobile navigation */
+  .rounded-t-2xl {
+    @apply rounded-t-3xl;
   }
 }
 
@@ -157,4 +164,62 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-500;
   }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .transition-all,
+  .transition-colors,
+  .transition-transform,
+  .transition-shadow {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .border-gray-200 {
+    @apply border-gray-400;
+  }
+  
+  .border-gray-300 {
+    @apply border-gray-500;
+  }
+  
+  .text-gray-500 {
+    @apply text-gray-700;
+  }
+  
+  .text-gray-400 {
+    @apply text-gray-600;
+  }
+}
+
+/* Focus improvements for accessibility */
+.focus\:ring-2:focus {
+  @apply ring-2 ring-offset-2;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+}
+
+/* Loading states */
+.loading {
+  @apply opacity-50 pointer-events-none;
+}
+
+/* Error states */
+.error {
+  @apply border-red-500 bg-red-50 dark:bg-red-900/20;
+}
+
+/* Success states */
+.success {
+  @apply border-green-500 bg-green-50 dark:bg-green-900/20;
 }

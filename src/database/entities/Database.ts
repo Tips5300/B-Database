@@ -15,6 +15,9 @@ export class Database {
   @Column('text', { nullable: true })
   thumbnail?: string;
 
+  @Column('text', { nullable: true })
+  emoji?: string;
+
   @Column('boolean', { default: false })
   isEncrypted!: boolean;
 

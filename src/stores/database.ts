@@ -70,7 +70,6 @@ export const useDatabaseStore = defineStore('database', () => {
       })
       
       databases.value = loadedDatabases
-      console.log('Loaded databases:', databases.value.length)
     } catch (error) {
       console.error('Failed to load databases:', error)
       databases.value = []
@@ -79,7 +78,7 @@ export const useDatabaseStore = defineStore('database', () => {
     }
   }
 
-  const createDatabase = async (name: string, description?: string, thumbnail?: string) => {
+  const createDatabase = async (name: string, description?: string, emoji?: string, thumbnail?: string) => {
     try {
       const dataSource = getDataSource()
       const databaseRepo = dataSource.getRepository(Database)
@@ -87,6 +86,7 @@ export const useDatabaseStore = defineStore('database', () => {
       const database = new Database()
       database.name = name
       database.description = description
+      database.emoji = emoji
       database.thumbnail = thumbnail
       database.isEncrypted = false
       
@@ -135,13 +135,14 @@ export const useDatabaseStore = defineStore('database', () => {
     }
   }
 
-  const createTable = async (databaseId: string, name: string, thumbnail?: string) => {
+  const createTable = async (databaseId: string, name: string, emoji?: string, thumbnail?: string) => {
     try {
       const dataSource = getDataSource()
       const tableRepo = dataSource.getRepository(Table)
       
       const table = new Table()
       table.name = name
+      table.emoji = emoji
       table.thumbnail = thumbnail
       table.databaseId = databaseId
       

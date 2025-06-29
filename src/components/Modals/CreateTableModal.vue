@@ -26,6 +26,18 @@
           />
         </div>
 
+        <div>
+          <label for="emoji" class="form-label">Emoji (Optional)</label>
+          <input
+            id="emoji"
+            v-model="formData.emoji"
+            type="text"
+            maxlength="2"
+            class="form-input text-center text-2xl"
+            placeholder="📋"
+          />
+        </div>
+
         <ThumbnailPicker v-model="formData.thumbnail" />
 
         <div class="flex justify-end space-x-3 pt-4">
@@ -68,6 +80,7 @@ const emit = defineEmits<{
 
 const formData = reactive({
   name: '',
+  emoji: '',
   thumbnail: ''
 })
 
@@ -78,6 +91,7 @@ const handleSubmit = () => {
 onMounted(() => {
   if (props.table) {
     formData.name = props.table.name
+    formData.emoji = props.table.emoji || ''
     formData.thumbnail = props.table.thumbnail || ''
   }
 })

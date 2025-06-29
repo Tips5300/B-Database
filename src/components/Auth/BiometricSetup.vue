@@ -247,35 +247,27 @@ const setupAuth = async () => {
 
   try {
     if (selectedMethod.value === 'biometric') {
-      toast.info('Setting up biometric authentication...')
       const result = await BiometricAuthService.enrollBiometric()
       if (result.success) {
-        toast.success('✅ Biometric authentication set up successfully!')
         emit('success', 'biometric')
       } else {
         error.value = result.error || 'Failed to set up biometric authentication'
-        toast.error(`❌ Biometric setup failed: ${result.error || 'Unknown error'}`)
       }
     } else {
       if (pin.value !== confirmPin.value) {
         error.value = 'PINs do not match'
-        toast.error('❌ PINs do not match')
         return
       }
       
-      toast.info('Setting up PIN authentication...')
       const success = await PinAuthService.setPin(pin.value)
       if (success) {
-        toast.success('✅ PIN authentication set up successfully!')
         emit('success', 'pin')
       } else {
         error.value = 'Failed to set up PIN'
-        toast.error('❌ Failed to set up PIN authentication')
       }
     }
   } catch (err) {
     error.value = 'An unexpected error occurred'
-    toast.error('❌ An unexpected error occurred during setup')
     console.error('Authentication setup error:', err)
   } finally {
     isLoading.value = false
@@ -287,13 +279,9 @@ onMounted(async () => {
     biometricAvailable.value = await BiometricAuthService.isAvailable()
     if (biometricAvailable.value) {
       selectedMethod.value = 'biometric'
-      toast.info('🔐 Biometric authentication is available on this device')
-    } else {
-      toast.info('📱 Using PIN authentication (biometric not available)')
     }
   } catch (error) {
     console.error('Error checking biometric availability:', error)
-    toast.warning('⚠️ Could not check biometric availability, using PIN authentication')
   }
 })
 </script>

@@ -23,16 +23,15 @@
       <!-- Database Info Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
         <div class="flex items-center space-x-3 mb-3">
-          <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+          <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+            <span v-if="database.emoji" class="text-3xl">{{ database.emoji }}</span>
             <img
-              v-if="database.thumbnail"
+              v-else-if="database.thumbnail"
               :src="database.thumbnail"
               :alt="database.name"
               class="w-full h-full object-cover"
             />
-            <div v-else class="w-full h-full flex items-center justify-center text-2xl">
-              📊
-            </div>
+            <span v-else class="text-2xl">📊</span>
           </div>
           <div class="flex-1">
             <h1 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -77,16 +76,15 @@
             @click="navigateToTable(table.id)"
           >
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                <span v-if="table.emoji" class="text-xl">{{ table.emoji }}</span>
                 <img
-                  v-if="table.thumbnail"
+                  v-else-if="table.thumbnail"
                   :src="table.thumbnail"
                   :alt="table.name"
                   class="w-full h-full object-cover"
                 />
-                <div v-else class="w-full h-full flex items-center justify-center text-lg">
-                  📋
-                </div>
+                <span v-else class="text-lg">📋</span>
               </div>
               <div class="flex-1">
                 <h3 class="font-semibold text-gray-900 dark:text-white">
@@ -162,7 +160,6 @@ const database = computed(() =>
 const navigateToTable = async (tableId: string) => {
   try {
     await router.push(`/database/${databaseId}/table/${tableId}`)
-    toast.info('📋 Opening table...')
   } catch (error) {
     console.error('Navigation error:', error)
     toast.error('Failed to open table')
@@ -186,10 +183,15 @@ const handleSaveTable = async (tableData: any) => {
   try {
     if (editingTable.value) {
       await databaseStore.updateTable(editingTable.value.id, tableData)
-      toast.success('✅ Table updated successfully')
+      toast.success('Table updated successfully')
     } else {
-      const newTable = await databaseStore.createTable(databaseId, tableData.name, tableData.thumbnail)
-      toast.success('🎉 Table created successfully')
+      const newTable = await databaseStore.createTable(
+        databaseId, 
+        tableData.name, 
+        tableData.emoji, 
+        tableData.thumbnail
+      )
+      toast.success('Table created successfully')
       
       // Redirect to the new table
       await router.push(`/database/${databaseId}/table/${newTable.id}`)
