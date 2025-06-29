@@ -44,7 +44,7 @@ onMounted(async () => {
     // Load settings
     settingsStore.loadSettings()
     
-    // Initialize auth
+    // Initialize auth (this will set isInitialized to true)
     await authStore.initializeAuth()
     
     // If already authenticated, load data

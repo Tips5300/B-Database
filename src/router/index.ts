@@ -86,7 +86,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Initialize auth if not already done
+  // Wait for auth initialization if not already done
   if (!authStore.isInitialized) {
     await authStore.initializeAuth()
   }
@@ -94,25 +94,31 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
   
+  // Handle authentication requirements
   if (requiresAuth) {
     if (!authStore.hasAuthSetup) {
       // No auth setup, redirect to setup
-      next('/setup')
+      if (to.path !== '/setup') {
+        next('/setup')
+        return
+      }
     } else if (!authStore.isAuthenticated) {
       // Has auth setup but not authenticated, redirect to auth
-      next('/auth')
-    } else {
-      // Authenticated, proceed
-      next()
+      if (to.path !== '/auth') {
+        next('/auth')
+        return
+      }
     }
+    // User is authenticated or already on correct auth route, proceed
+    next()
   } else if (requiresGuest) {
     if (authStore.isAuthenticated) {
       // Already authenticated, redirect to dashboard
       next('/')
-    } else {
-      // Not authenticated, proceed to guest route
-      next()
+      return
     }
+    // Not authenticated, proceed to guest route
+    next()
   } else {
     // No auth requirements, proceed
     next()

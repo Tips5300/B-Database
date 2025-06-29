@@ -248,10 +248,10 @@ const setupAuth = async () => {
     if (selectedMethod.value === 'biometric') {
       const result = await BiometricAuthService.enrollBiometric()
       if (result.success) {
-        authStore.setupAuth('biometric')
-        authStore.isAuthenticated = true
+        await authStore.setupAuth('biometric')
         toast.success('Biometric authentication set up successfully!')
-        await router.push('/')
+        // Redirect to auth screen to authenticate
+        await router.push('/auth')
       } else {
         error.value = result.error || 'Failed to set up biometric authentication'
       }
@@ -263,10 +263,10 @@ const setupAuth = async () => {
       
       const success = await PinAuthService.setPin(pin.value)
       if (success) {
-        authStore.setupAuth('pin')
-        authStore.isAuthenticated = true
+        await authStore.setupAuth('pin')
         toast.success('PIN authentication set up successfully!')
-        await router.push('/')
+        // Redirect to auth screen to authenticate
+        await router.push('/auth')
       } else {
         error.value = 'Failed to set up PIN'
       }
@@ -281,6 +281,7 @@ const setupAuth = async () => {
 
 const skipSetup = async () => {
   authStore.isAuthenticated = true
+  localStorage.setItem('was_authenticated', 'true')
   toast.info('You can set up authentication later in Settings')
   await router.push('/')
 }

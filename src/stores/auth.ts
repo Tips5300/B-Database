@@ -59,6 +59,13 @@ export const useAuthStore = defineStore('auth', () => {
           console.error('Failed to parse user data:', error)
         }
       }
+
+      // Check if user was previously authenticated (for app restart scenarios)
+      const wasAuthenticated = localStorage.getItem('was_authenticated')
+      if (wasAuthenticated === 'true' && hasAuthSetup.value) {
+        // User was authenticated before, but we still need them to re-authenticate
+        isAuthenticated.value = false
+      }
     } catch (error) {
       console.error('Failed to initialize auth:', error)
     } finally {
@@ -72,6 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (method === 'biometric') {
       localStorage.setItem('preferBiometric', 'true')
     }
+    // Don't automatically authenticate after setup
   }
 
   const authenticate = async (): Promise<boolean> => {
@@ -81,6 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
         const result = await BiometricAuthService.authenticate()
         if (result.success) {
           isAuthenticated.value = true
+          localStorage.setItem('was_authenticated', 'true')
           return true
         }
       }
@@ -95,12 +104,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = () => {
     isAuthenticated.value = false
+    localStorage.removeItem('was_authenticated')
   }
 
   const resetAuth = () => {
     PinAuthService.removePin()
     BiometricAuthService.removeCredential()
     localStorage.removeItem('preferBiometric')
+    localStorage.removeItem('was_authenticated')
     authMethod.value = null
     isAuthenticated.value = false
   }
@@ -124,6 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       if (credentials.email === 'demo@example.com' && credentials.password === 'demo') {
         isAuthenticated.value = true
+        localStorage.setItem('was_authenticated', 'true')
         return true
       }
       return false
