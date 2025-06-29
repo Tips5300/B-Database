@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+    <div class="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
       <div class="text-center mb-8">
         <div class="w-20 h-20 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-4">
           <ShieldCheckIcon class="w-10 h-10 text-primary-600 dark:text-primary-400" />
@@ -153,6 +153,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useToast } from 'vue-toastification'
 import { BiometricAuthService } from '../../services/BiometricAuthService'
 import { PinAuthService } from '../../services/PinAuthService'
 import {
@@ -165,6 +166,8 @@ const emit = defineEmits<{
   success: [method: 'biometric' | 'pin']
   skip: []
 }>()
+
+const toast = useToast()
 
 const selectedMethod = ref<'biometric' | 'pin'>('pin')
 const biometricAvailable = ref(false)
@@ -244,36 +247,53 @@ const setupAuth = async () => {
 
   try {
     if (selectedMethod.value === 'biometric') {
+      toast.info('Setting up biometric authentication...')
       const result = await BiometricAuthService.enrollBiometric()
       if (result.success) {
+        toast.success('✅ Biometric authentication set up successfully!')
         emit('success', 'biometric')
       } else {
         error.value = result.error || 'Failed to set up biometric authentication'
+        toast.error(`❌ Biometric setup failed: ${result.error || 'Unknown error'}`)
       }
     } else {
       if (pin.value !== confirmPin.value) {
         error.value = 'PINs do not match'
+        toast.error('❌ PINs do not match')
         return
       }
       
+      toast.info('Setting up PIN authentication...')
       const success = await PinAuthService.setPin(pin.value)
       if (success) {
+        toast.success('✅ PIN authentication set up successfully!')
         emit('success', 'pin')
       } else {
         error.value = 'Failed to set up PIN'
+        toast.error('❌ Failed to set up PIN authentication')
       }
     }
   } catch (err) {
     error.value = 'An unexpected error occurred'
+    toast.error('❌ An unexpected error occurred during setup')
+    console.error('Authentication setup error:', err)
   } finally {
     isLoading.value = false
   }
 }
 
 onMounted(async () => {
-  biometricAvailable.value = await BiometricAuthService.isAvailable()
-  if (biometricAvailable.value) {
-    selectedMethod.value = 'biometric'
+  try {
+    biometricAvailable.value = await BiometricAuthService.isAvailable()
+    if (biometricAvailable.value) {
+      selectedMethod.value = 'biometric'
+      toast.info('🔐 Biometric authentication is available on this device')
+    } else {
+      toast.info('📱 Using PIN authentication (biometric not available)')
+    }
+  } catch (error) {
+    console.error('Error checking biometric availability:', error)
+    toast.warning('⚠️ Could not check biometric availability, using PIN authentication')
   }
 })
 </script>
