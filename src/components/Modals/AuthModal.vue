@@ -64,6 +64,14 @@
       </form>
 
       <div class="mt-6 text-center">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
+          <p class="text-sm text-blue-800 dark:text-blue-200 font-medium">
+            Demo Mode
+          </p>
+          <p class="text-xs text-blue-600 dark:text-blue-300 mt-1">
+            This is a demonstration login. No real authentication is performed.
+          </p>
+        </div>
         <p class="text-sm text-gray-600 dark:text-gray-400">
           Demo credentials: demo@example.com / demo
         </p>

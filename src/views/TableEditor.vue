@@ -470,7 +470,12 @@ const duplicateTable = async () => {
       })
     }
     
-    toast.success('Table duplicated successfully')
+    // Copy records
+    for (const record of table.value.records || []) {
+      await databaseStore.addRecord(newTable.id, record.data)
+    }
+    
+    toast.success('Table duplicated successfully with all records')
   } catch (error) {
     toast.error('Failed to duplicate table')
   }

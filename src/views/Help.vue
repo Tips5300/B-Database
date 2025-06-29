@@ -227,16 +227,16 @@ const toggleFaq = (index: number) => {
 const openQuickHelp = (item: any) => {
   switch (item.action) {
     case 'getting-started':
-      toast.info('Opening getting started guide...')
+      window.open('https://docs.example.com/getting-started', '_blank', 'noopener,noreferrer')
       break
     case 'tutorials':
-      toast.info('Opening video tutorials...')
+      window.open('https://youtube.com/playlist?list=example', '_blank', 'noopener,noreferrer')
       break
     case 'user-guide':
-      toast.info('Opening user guide...')
+      window.open('https://docs.example.com/user-guide', '_blank', 'noopener,noreferrer')
       break
     case 'settings-help':
-      toast.info('Opening settings help...')
+      window.open('https://docs.example.com/settings', '_blank', 'noopener,noreferrer')
       break
   }
 }
@@ -248,10 +248,14 @@ const sendEmail = () => {
 }
 
 const openChat = () => {
-  toast.info('Live chat feature coming soon!')
+  // Open a new tab to a chat service
+  window.open('https://tawk.to/chat/example', '_blank', 'noopener,noreferrer')
+  toast.success('Opening live chat in new tab')
 }
 
 const reportBug = () => {
-  toast.info('Bug reporting feature coming soon!')
+  // Open a new tab to bug reporting form
+  window.open('https://github.com/example/database-manager/issues/new', '_blank', 'noopener,noreferrer')
+  toast.success('Opening bug report form in new tab')
 }
 </script>

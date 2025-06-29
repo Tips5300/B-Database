@@ -172,11 +172,68 @@
       @close="showPurchaseModal = false"
       @success="handlePurchaseSuccess"
     />
+
+    <!-- Dashboard Menu -->
+    <div
+      v-if="showDashboardMenu"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center p-4 z-50"
+      @click="showDashboardMenu = false"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-t-2xl w-full max-w-md p-6 space-y-4">
+        <div class="text-center">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Dashboard Menu
+          </h3>
+        </div>
+        
+        <div class="space-y-2">
+          <button
+            @click="navigateToProfile"
+            class="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <UserIcon class="w-5 h-5 text-gray-400" />
+            <span class="text-gray-900 dark:text-white">Profile</span>
+          </button>
+          
+          <button
+            @click="navigateToSettings"
+            class="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <CogIcon class="w-5 h-5 text-gray-400" />
+            <span class="text-gray-900 dark:text-white">Settings</span>
+          </button>
+          
+          <button
+            @click="navigateToAnalytics"
+            class="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <ChartBarIcon class="w-5 h-5 text-gray-400" />
+            <span class="text-gray-900 dark:text-white">Analytics</span>
+          </button>
+          
+          <button
+            @click="navigateToHelp"
+            class="w-full flex items-center space-x-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <QuestionMarkCircleIcon class="w-5 h-5 text-gray-400" />
+            <span class="text-gray-900 dark:text-white">Help & Support</span>
+          </button>
+        </div>
+        
+        <button
+          @click="showDashboardMenu = false"
+          class="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { useToast } from 'vue-toastification'
 import {
@@ -188,15 +245,21 @@ import {
   ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   StarIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  UserIcon,
+  CogIcon,
+  ChartBarIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
 import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
 
+const router = useRouter()
 const databaseStore = useDatabaseStore()
 const toast = useToast()
 
 const showPurchaseModal = ref(false)
+const showDashboardMenu = ref(false)
 
 const recentDatabases = computed(() => 
   databaseStore.databases.slice(0, 5)
@@ -216,8 +279,27 @@ const handleSearch = () => {
 }
 
 const handleMenu = () => {
-  // Implement menu functionality
-  toast.info('Menu functionality coming soon')
+  showDashboardMenu.value = true
+}
+
+const navigateToProfile = () => {
+  showDashboardMenu.value = false
+  router.push('/profile')
+}
+
+const navigateToSettings = () => {
+  showDashboardMenu.value = false
+  router.push('/settings')
+}
+
+const navigateToAnalytics = () => {
+  showDashboardMenu.value = false
+  router.push('/analytics')
+}
+
+const navigateToHelp = () => {
+  showDashboardMenu.value = false
+  router.push('/help')
 }
 
 const exportAllData = async () => {
