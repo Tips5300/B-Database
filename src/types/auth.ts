@@ -46,3 +46,15 @@ export interface PlanLimits {
   collaborators: number
   features: string[]
 }
+
+export interface PlanFeatures {
+  [key: string]: string[]
+}
+
+export interface UsageStats {
+  databases: number
+  tables: number
+  records: number
+  storage: number
+  exports: number
+}
