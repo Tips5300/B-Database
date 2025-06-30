@@ -48,24 +48,44 @@
               <optgroup label="Numbers">
                 <option value="number">Number</option>
                 <option value="currency">Currency</option>
+                <option value="rating">Rating</option>
+                <option value="progress">Progress</option>
+                <option value="duration">Duration</option>
               </optgroup>
               <optgroup label="Date & Time">
                 <option value="date">Date</option>
                 <option value="time">Time</option>
                 <option value="datetime">Date & Time</option>
+                <option value="created_time">Created Time</option>
+                <option value="modified_time">Modified Time</option>
               </optgroup>
               <optgroup label="Media">
                 <option value="image">Image</option>
                 <option value="file">File</option>
+                <option value="signature">Signature</option>
               </optgroup>
-              <optgroup label="Advanced">
+              <optgroup label="Selection">
                 <option value="boolean">Boolean</option>
                 <option value="enum">Select/Enum</option>
+                <option value="tags">Tags</option>
+                <option value="checklist">Checklist</option>
+              </optgroup>
+              <optgroup label="Advanced">
                 <option value="json">JSON</option>
                 <option value="geometry">Geometry/Location</option>
                 <option value="color">Color</option>
                 <option value="csv">CSV Data</option>
+                <option value="barcode">Barcode</option>
+                <option value="qr_code">QR Code</option>
+                <option value="formula">Formula</option>
+                <option value="lookup">Lookup</option>
+                <option value="rollup">Rollup</option>
+                <option value="autonumber">Auto Number</option>
                 <option value="relationship">Relationship</option>
+              </optgroup>
+              <optgroup label="System">
+                <option value="created_by">Created By</option>
+                <option value="modified_by">Modified By</option>
               </optgroup>
             </select>
           </div>
@@ -102,7 +122,7 @@
             </label>
           </div>
 
-          <div v-if="formData.type && formData.type !== 'relationship'">
+          <div v-if="formData.type && !isSystemField(formData.type)">
             <label for="defaultValue" class="form-label">Default Value</label>
             <input
               id="defaultValue"
@@ -114,146 +134,210 @@
           </div>
         </div>
 
-        <!-- Relationship Options -->
-        <div v-if="formData.type === 'relationship'" class="space-y-4">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Relationship Configuration</h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Type-specific Options -->
+        <div v-if="showTypeSpecificOptions" class="space-y-6">
+          <!-- Rating Options -->
+          <div v-if="formData.type === 'rating'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Rating Options</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="maxRating" class="form-label">Maximum Rating</label>
+                <select
+                  id="maxRating"
+                  v-model="formData.options.maxRating"
+                  class="form-input"
+                >
+                  <option value="3">3 Stars</option>
+                  <option value="5">5 Stars</option>
+                  <option value="10">10 Points</option>
+                </select>
+              </div>
+              <div class="flex items-center">
+                <label class="flex items-center space-x-2">
+                  <input
+                    v-model="formData.options.showValue"
+                    type="checkbox"
+                    class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <span class="text-sm text-gray-900 dark:text-white">Show numeric value</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags Options -->
+          <div v-if="formData.type === 'tags'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Tags Options</h3>
             <div>
-              <label for="relationshipType" class="form-label">Relationship Type</label>
-              <select
-                id="relationshipType"
-                v-model="formData.options.relationshipType"
+              <label for="tagSuggestions" class="form-label">Suggested Tags (comma-separated)</label>
+              <input
+                id="tagSuggestions"
+                v-model="tagSuggestionsInput"
+                type="text"
                 class="form-input"
-                required
+                placeholder="urgent, important, review, completed"
+              />
+            </div>
+          </div>
+
+          <!-- Barcode Options -->
+          <div v-if="formData.type === 'barcode'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Barcode Options</h3>
+            <div>
+              <label for="barcodeFormat" class="form-label">Barcode Format</label>
+              <select
+                id="barcodeFormat"
+                v-model="formData.options.barcodeFormat"
+                class="form-input"
               >
-                <option value="">Select type</option>
-                <option value="one-to-one">One to One</option>
-                <option value="one-to-many">One to Many</option>
-                <option value="many-to-one">Many to One</option>
-                <option value="many-to-many">Many to Many</option>
-                <option value="self-referential">Self Referential</option>
+                <option value="code128">Code 128</option>
+                <option value="code39">Code 39</option>
+                <option value="ean13">EAN-13</option>
+                <option value="upc">UPC</option>
               </select>
+            </div>
+          </div>
+
+          <!-- QR Code Options -->
+          <div v-if="formData.type === 'qr_code'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">QR Code Options</h3>
+            <div>
+              <label for="qrErrorCorrection" class="form-label">Error Correction Level</label>
+              <select
+                id="qrErrorCorrection"
+                v-model="formData.options.qrErrorCorrection"
+                class="form-input"
+              >
+                <option value="L">Low (7%)</option>
+                <option value="M">Medium (15%)</option>
+                <option value="Q">Quartile (25%)</option>
+                <option value="H">High (30%)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Formula Options -->
+          <div v-if="formData.type === 'formula'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Formula Configuration</h3>
+            <div>
+              <label for="formula" class="form-label">Formula</label>
+              <textarea
+                id="formula"
+                v-model="formData.options.formula"
+                rows="3"
+                class="form-input font-mono text-sm"
+                placeholder="e.g., {Price} * {Quantity}"
+              />
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Use {Field Name} to reference other fields. Supports basic math and functions.
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto Number Options -->
+          <div v-if="formData.type === 'autonumber'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Auto Number Options</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="autoNumberStart" class="form-label">Starting Number</label>
+                <input
+                  id="autoNumberStart"
+                  v-model.number="formData.options.autoNumberStart"
+                  type="number"
+                  class="form-input"
+                  placeholder="1"
+                />
+              </div>
+              <div>
+                <label for="autoNumberStep" class="form-label">Step</label>
+                <input
+                  id="autoNumberStep"
+                  v-model.number="formData.options.autoNumberStep"
+                  type="number"
+                  class="form-input"
+                  placeholder="1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Existing options for other field types -->
+          <!-- Relationship Options -->
+          <div v-if="formData.type === 'relationship'" class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Relationship Configuration</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="relationshipType" class="form-label">Relationship Type</label>
+                <select
+                  id="relationshipType"
+                  v-model="formData.options.relationshipType"
+                  class="form-input"
+                  required
+                >
+                  <option value="">Select type</option>
+                  <option value="one-to-one">One to One</option>
+                  <option value="one-to-many">One to Many</option>
+                  <option value="many-to-one">Many to One</option>
+                  <option value="many-to-many">Many to Many</option>
+                  <option value="self-referential">Self Referential</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="targetTable" class="form-label">Target Table</label>
+                <select
+                  id="targetTable"
+                  v-model="formData.options.targetTableId"
+                  @change="onTargetTableChange"
+                  class="form-input"
+                  required
+                >
+                  <option value="">Select table</option>
+                  <option
+                    v-for="table in availableTables"
+                    :key="table.id"
+                    :value="table.id"
+                  >
+                    {{ table.name }}
+                  </option>
+                </select>
+              </div>
             </div>
 
             <div>
-              <label for="targetTable" class="form-label">Target Table</label>
+              <label for="displayField" class="form-label">Display Field</label>
               <select
-                id="targetTable"
-                v-model="formData.options.targetTableId"
-                @change="onTargetTableChange"
+                id="displayField"
+                v-model="formData.options.displayField"
                 class="form-input"
-                required
               >
-                <option value="">Select table</option>
+                <option value="">Auto (Primary field)</option>
                 <option
-                  v-for="table in availableTables"
-                  :key="table.id"
-                  :value="table.id"
+                  v-for="field in targetTableFields"
+                  :key="field.id"
+                  :value="field.id"
                 >
-                  {{ table.name }}
+                  {{ field.name }} ({{ field.type }})
                 </option>
               </select>
             </div>
-          </div>
 
-          <div>
-            <label for="displayField" class="form-label">Display Field</label>
-            <select
-              id="displayField"
-              v-model="formData.options.displayField"
-              class="form-input"
-            >
-              <option value="">Auto (Primary field)</option>
-              <option
-                v-for="field in targetTableFields"
-                :key="field.id"
-                :value="field.id"
-              >
-                {{ field.name }} ({{ field.type }})
-              </option>
-            </select>
-          </div>
-
-          <div v-if="['one-to-many', 'many-to-many'].includes(formData.options.relationshipType)">
-            <label class="flex items-center space-x-2">
-              <input
-                v-model="formData.options.allowMultiple"
-                type="checkbox"
-                class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
-              />
-              <span class="text-sm text-gray-900 dark:text-white">Allow Multiple Selection</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Type-specific Validation -->
-        <div v-if="showValidation" class="space-y-4">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Validation</h3>
-          
-          <!-- Text Validation -->
-          <div v-if="isTextType" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="minLength" class="form-label">Minimum Length</label>
-              <input
-                id="minLength"
-                v-model.number="formData.validation.minLength"
-                type="number"
-                min="0"
-                class="form-input"
-              />
-            </div>
-            <div>
-              <label for="maxLength" class="form-label">Maximum Length</label>
-              <input
-                id="maxLength"
-                v-model.number="formData.validation.maxLength"
-                type="number"
-                min="0"
-                class="form-input"
-              />
-            </div>
-            <div class="md:col-span-2">
-              <label for="pattern" class="form-label">Pattern (Regex)</label>
-              <input
-                id="pattern"
-                v-model="formData.validation.pattern"
-                type="text"
-                class="form-input"
-                placeholder="^[A-Za-z]+$"
-              />
+            <div v-if="['one-to-many', 'many-to-many'].includes(formData.options.relationshipType)">
+              <label class="flex items-center space-x-2">
+                <input
+                  v-model="formData.options.allowMultiple"
+                  type="checkbox"
+                  class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+                />
+                <span class="text-sm text-gray-900 dark:text-white">Allow Multiple Selection</span>
+              </label>
             </div>
           </div>
 
-          <!-- Number Validation -->
-          <div v-if="isNumberType" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="min" class="form-label">Minimum Value</label>
-              <input
-                id="min"
-                v-model.number="formData.validation.min"
-                type="number"
-                class="form-input"
-              />
-            </div>
-            <div>
-              <label for="max" class="form-label">Maximum Value</label>
-              <input
-                id="max"
-                v-model.number="formData.validation.max"
-                type="number"
-                class="form-input"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Type-specific Options -->
-        <div v-if="showOptions" class="space-y-4">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Options</h3>
-          
           <!-- Enum Options -->
           <div v-if="formData.type === 'enum'" class="space-y-3">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Enum Options</h3>
             <div class="flex items-center space-x-2">
               <input
                 v-model="newEnumValue"
@@ -350,6 +434,67 @@
           </div>
         </div>
 
+        <!-- Type-specific Validation -->
+        <div v-if="showValidation" class="space-y-4">
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Validation</h3>
+          
+          <!-- Text Validation -->
+          <div v-if="isTextType" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="minLength" class="form-label">Minimum Length</label>
+              <input
+                id="minLength"
+                v-model.number="formData.validation.minLength"
+                type="number"
+                min="0"
+                class="form-input"
+              />
+            </div>
+            <div>
+              <label for="maxLength" class="form-label">Maximum Length</label>
+              <input
+                id="maxLength"
+                v-model.number="formData.validation.maxLength"
+                type="number"
+                min="0"
+                class="form-input"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label for="pattern" class="form-label">Pattern (Regex)</label>
+              <input
+                id="pattern"
+                v-model="formData.validation.pattern"
+                type="text"
+                class="form-input"
+                placeholder="^[A-Za-z]+$"
+              />
+            </div>
+          </div>
+
+          <!-- Number Validation -->
+          <div v-if="isNumberType" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="min" class="form-label">Minimum Value</label>
+              <input
+                id="min"
+                v-model.number="formData.validation.min"
+                type="number"
+                class="form-input"
+              />
+            </div>
+            <div>
+              <label for="max" class="form-label">Maximum Value</label>
+              <input
+                id="max"
+                v-model.number="formData.validation.max"
+                type="number"
+                class="form-input"
+              />
+            </div>
+          </div>
+        </div>
+
         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
@@ -392,6 +537,7 @@ const emit = defineEmits<{
 const newEnumValue = ref('')
 const maxFileSizeMB = ref(5)
 const fileTypesInput = ref('')
+const tagSuggestionsInput = ref('')
 
 const formData = reactive({
   name: '',
@@ -418,7 +564,15 @@ const formData = reactive({
     relationshipType: '',
     targetTableId: '',
     displayField: '',
-    allowMultiple: false
+    allowMultiple: false,
+    maxRating: 5,
+    showValue: true,
+    tagSuggestions: [] as string[],
+    barcodeFormat: 'code128',
+    qrErrorCorrection: 'M',
+    formula: '',
+    autoNumberStart: 1,
+    autoNumberStep: 1
   }
 })
 
@@ -446,16 +600,20 @@ const isTextType = computed(() =>
 )
 
 const isNumberType = computed(() => 
-  ['number', 'currency'].includes(formData.type)
+  ['number', 'currency', 'rating', 'progress', 'duration'].includes(formData.type)
 )
 
 const showValidation = computed(() => 
   isTextType.value || isNumberType.value
 )
 
-const showOptions = computed(() => 
-  ['enum', 'currency', 'file', 'image'].includes(formData.type)
+const showTypeSpecificOptions = computed(() => 
+  ['enum', 'currency', 'file', 'image', 'relationship', 'rating', 'tags', 'barcode', 'qr_code', 'formula', 'autonumber'].includes(formData.type)
 )
+
+const isSystemField = (type: string) => {
+  return ['created_time', 'modified_time', 'created_by', 'modified_by', 'autonumber'].includes(type)
+}
 
 const onTypeChange = () => {
   // Reset validation and options when type changes
@@ -477,7 +635,15 @@ const onTypeChange = () => {
     relationshipType: '',
     targetTableId: '',
     displayField: '',
-    allowMultiple: false
+    allowMultiple: false,
+    maxRating: 5,
+    showValue: true,
+    tagSuggestions: [],
+    barcodeFormat: 'code128',
+    qrErrorCorrection: 'M',
+    formula: '',
+    autoNumberStart: 1,
+    autoNumberStep: 1
   }
   
   formData.defaultValue = ''
@@ -491,6 +657,8 @@ const getDefaultValueInputType = () => {
   switch (formData.type) {
     case 'number':
     case 'currency':
+    case 'rating':
+    case 'progress':
       return 'number'
     case 'date':
       return 'date'
@@ -521,6 +689,10 @@ const getDefaultValuePlaceholder = () => {
       return '0'
     case 'currency':
       return '0.00'
+    case 'rating':
+      return '0'
+    case 'progress':
+      return '0'
     case 'email':
       return 'user@example.com'
     case 'phone':
@@ -551,6 +723,10 @@ watch(maxFileSizeMB, (newValue) => {
 
 watch(fileTypesInput, (newValue) => {
   formData.options.fileTypes = newValue.split(',').map(type => type.trim()).filter(Boolean)
+})
+
+watch(tagSuggestionsInput, (newValue) => {
+  formData.options.tagSuggestions = newValue.split(',').map(tag => tag.trim()).filter(Boolean)
 })
 
 const handleSubmit = () => {
@@ -590,6 +766,10 @@ onMounted(() => {
     
     if (props.field.options?.fileTypes) {
       fileTypesInput.value = props.field.options.fileTypes.join(', ')
+    }
+    
+    if (props.field.options?.tagSuggestions) {
+      tagSuggestionsInput.value = props.field.options.tagSuggestions.join(', ')
     }
   }
 })
