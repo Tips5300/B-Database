@@ -88,8 +88,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { BiometricAuthService } from '../../services/BiometricAuthService'
-import { PinAuthService } from '../../services/PinAuthService'
+import { useAuthStore } from '@/stores/auth'
+import { BiometricAuthService } from '@/services/BiometricAuthService'
+import { PinAuthService } from '@/services/PinAuthService'
 import {
   FingerPrintIcon,
   LockClosedIcon
@@ -99,6 +100,8 @@ const emit = defineEmits<{
   success: []
   reset: []
 }>()
+
+const authStore = useAuthStore()
 
 const authMethod = ref<'biometric' | 'pin'>('pin')
 const pin = ref('')
@@ -152,7 +155,7 @@ onMounted(async () => {
   biometricAvailable.value = await BiometricAuthService.isAvailable()
   
   // Determine default auth method
-  if (biometricAvailable.value) {
+  if (biometricAvailable.value && localStorage.getItem('preferBiometric') === 'true') {
     authMethod.value = 'biometric'
   } else if (PinAuthService.hasPinSet()) {
     authMethod.value = 'pin'

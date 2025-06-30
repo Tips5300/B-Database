@@ -125,8 +125,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { BiometricAuthService } from '../../services/BiometricAuthService'
-import { PinAuthService } from '../../services/PinAuthService'
+import { BiometricAuthService } from '@/services/BiometricAuthService'
+import { PinAuthService } from '@/services/PinAuthService'
 import {
   FingerPrintIcon,
   LockClosedIcon

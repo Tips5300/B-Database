@@ -185,6 +185,13 @@
 
     <!-- Purchase Modal -->
     <PurchaseModal v-if="showPurchaseModal" @close="showPurchaseModal = false" @success="handlePurchaseSuccess" />
+
+    <!-- Auth Setup Modal -->
+    <BiometricSetup 
+      v-if="showAuthSetup"
+      @success="handleAuthSetupSuccess"
+      @skip="showAuthSetup = false"
+    />
   </div>
 </template>
 
@@ -203,6 +210,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import MobileHeader from '@/components/Navigation/MobileHeader.vue'
 import PurchaseModal from '@/components/Purchase/PurchaseModal.vue'
+import BiometricSetup from '@/components/Auth/BiometricSetup.vue'
 
 const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
@@ -210,6 +218,7 @@ const databaseStore = useDatabaseStore()
 const toastStore = useToastStore()
 
 const showPurchaseModal = ref(false)
+const showAuthSetup = ref(false)
 
 const toggleCompactMode = () => {
   settingsStore.compactMode = !settingsStore.compactMode
@@ -224,7 +233,13 @@ const toggleAutoBackup = () => {
 }
 
 const changeAuthMethod = () => {
-  toastStore.info('Authentication method change coming soon')
+  showAuthSetup.value = true
+}
+
+const handleAuthSetupSuccess = (method: 'biometric' | 'pin') => {
+  authStore.setupAuth(method)
+  showAuthSetup.value = false
+  toastStore.success(`${method === 'biometric' ? 'Biometric' : 'PIN'} authentication set up successfully`)
 }
 
 const resetAuth = () => {
