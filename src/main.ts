@@ -1,10 +1,13 @@
 import './assets/main.css'
 
+import { initializeDatabase } from './database/connection'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+
+await initializeDatabase();
 
 const app = createApp(App)
 
