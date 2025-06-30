@@ -8,6 +8,8 @@
       :compact="compact"
       :tables="tables"
       :records="records"
+      :table="table"
+      :record="record"
       @update:value="$emit('update:value', $event)"
       @create-record="$emit('create-record', $event)"
     />
@@ -33,6 +35,15 @@ import GeometryRenderer from './GeometryRenderer.vue'
 import CurrencyRenderer from './CurrencyRenderer.vue'
 import CSVRenderer from './CSVRenderer.vue'
 import RelationshipRenderer from './RelationshipRenderer.vue'
+import RatingRenderer from './RatingRenderer.vue'
+import ProgressRenderer from './ProgressRenderer.vue'
+import TagsRenderer from './TagsRenderer.vue'
+import DurationRenderer from './DurationRenderer.vue'
+import ChecklistRenderer from './ChecklistRenderer.vue'
+import BarcodeRenderer from './BarcodeRenderer.vue'
+import QRCodeRenderer from './QRCodeRenderer.vue'
+import SignatureRenderer from './SignatureRenderer.vue'
+import FormulaRenderer from './FormulaRenderer.vue'
 
 interface Props {
   field: Field
@@ -41,6 +52,8 @@ interface Props {
   compact?: boolean
   tables?: Table[]
   records?: Record[]
+  table?: Table
+  record?: any
 }
 
 defineProps<Props>()
@@ -70,7 +83,23 @@ const getRendererComponent = (type: FieldType) => {
     [FieldType.JSON]: JSONRenderer,
     [FieldType.BOOLEAN]: BooleanRenderer,
     [FieldType.CSV]: CSVRenderer,
-    [FieldType.RELATIONSHIP]: RelationshipRenderer
+    [FieldType.RELATIONSHIP]: RelationshipRenderer,
+    [FieldType.RATING]: RatingRenderer,
+    [FieldType.PROGRESS]: ProgressRenderer,
+    [FieldType.TAGS]: TagsRenderer,
+    [FieldType.DURATION]: DurationRenderer,
+    [FieldType.CHECKLIST]: ChecklistRenderer,
+    [FieldType.BARCODE]: BarcodeRenderer,
+    [FieldType.QR_CODE]: QRCodeRenderer,
+    [FieldType.SIGNATURE]: SignatureRenderer,
+    [FieldType.FORMULA]: FormulaRenderer,
+    [FieldType.LOOKUP]: TextRenderer, // Simplified for now
+    [FieldType.ROLLUP]: NumberRenderer, // Simplified for now
+    [FieldType.AUTONUMBER]: NumberRenderer,
+    [FieldType.CREATED_TIME]: DateRenderer,
+    [FieldType.MODIFIED_TIME]: DateRenderer,
+    [FieldType.CREATED_BY]: TextRenderer,
+    [FieldType.MODIFIED_BY]: TextRenderer
   }
   return renderers[type] || TextRenderer
 }

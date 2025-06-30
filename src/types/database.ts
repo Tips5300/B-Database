@@ -90,7 +90,23 @@ export enum FieldType {
   JSON = 'json',
   BOOLEAN = 'boolean',
   CSV = 'csv',
-  RELATIONSHIP = 'relationship'
+  RELATIONSHIP = 'relationship',
+  RATING = 'rating',
+  PROGRESS = 'progress',
+  TAGS = 'tags',
+  DURATION = 'duration',
+  CHECKLIST = 'checklist',
+  BARCODE = 'barcode',
+  QR_CODE = 'qr_code',
+  SIGNATURE = 'signature',
+  FORMULA = 'formula',
+  LOOKUP = 'lookup',
+  ROLLUP = 'rollup',
+  AUTONUMBER = 'autonumber',
+  CREATED_TIME = 'created_time',
+  MODIFIED_TIME = 'modified_time',
+  CREATED_BY = 'created_by',
+  MODIFIED_BY = 'modified_by'
 }
 
 export interface FieldValidation {
@@ -114,6 +130,17 @@ export interface FieldOptions {
   targetTableId?: string
   displayField?: string
   allowMultiple?: boolean
+  maxRating?: number
+  showValue?: boolean
+  tagSuggestions?: string[]
+  formula?: string
+  lookupTableId?: string
+  lookupFieldId?: string
+  rollupTableId?: string
+  rollupFieldId?: string
+  rollupFunction?: 'sum' | 'average' | 'count' | 'min' | 'max'
+  autoNumberStart?: number
+  autoNumberStep?: number
 }
 
 export interface ExportOptions {
