@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">
           Upgrade Your Plan
         </h2>
@@ -13,44 +13,46 @@
         </button>
       </div>
 
-      <div class="space-y-4">
-        <div
-          v-for="product in products"
-          :key="product.id"
-          class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-primary-500 transition-colors cursor-pointer"
-          :class="{ 'border-primary-500 bg-primary-50 dark:bg-primary-900/20': selectedProduct?.id === product.id }"
-          @click="selectedProduct = product"
-        >
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-semibold text-gray-900 dark:text-white">
-              {{ product.title }}
-            </h3>
-            <span class="text-lg font-bold text-primary-600 dark:text-primary-400">
-              {{ product.price }}
-            </span>
-          </div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            {{ product.description }}
-          </p>
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">
-              {{ product.type }}
-            </span>
-            <div class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
-              <div
-                v-if="selectedProduct?.id === product.id"
-                class="w-3 h-3 bg-primary-600 rounded-full"
-              ></div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="space-y-4">
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-primary-500 transition-colors cursor-pointer"
+            :class="{ 'border-primary-500 bg-primary-50 dark:bg-primary-900/20': selectedProduct?.id === product.id }"
+            @click="selectedProduct = product"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold text-gray-900 dark:text-white">
+                {{ product.title }}
+              </h3>
+              <span class="text-lg font-bold text-primary-600 dark:text-primary-400">
+                {{ product.price }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+              {{ product.description }}
+            </p>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                {{ product.type }}
+              </span>
+              <div class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                <div
+                  v-if="selectedProduct?.id === product.id"
+                  class="w-3 h-3 bg-primary-600 rounded-full"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
+
+        <div v-if="error" class="mt-4 text-red-600 dark:text-red-400 text-sm text-center">
+          {{ error }}
+        </div>
       </div>
 
-      <div v-if="error" class="mt-4 text-red-600 dark:text-red-400 text-sm text-center">
-        {{ error }}
-      </div>
-
-      <div class="mt-6 space-y-3">
+      <div class="p-6 border-t border-gray-200 dark:border-gray-700 space-y-3">
         <button
           @click="purchaseSelected"
           :disabled="!selectedProduct || isLoading"
@@ -72,11 +74,11 @@
         >
           Restore Purchases
         </button>
-      </div>
 
-      <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
-        <p>Subscriptions auto-renew unless cancelled.</p>
-        <p>Prices may vary by region.</p>
+        <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
+          <p>Subscriptions auto-renew unless cancelled.</p>
+          <p>Prices may vary by region.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -84,6 +86,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useToastStore } from '@/stores/toast'
 import { InAppPurchaseService, type PurchaseProduct } from '../../services/InAppPurchaseService'
 import { XMarkIcon } from '@heroicons/vue/24/outline'
 
@@ -91,6 +95,9 @@ const emit = defineEmits<{
   close: []
   success: [productId: string]
 }>()
+
+const authStore = useAuthStore()
+const toastStore = useToastStore()
 
 const products = ref<PurchaseProduct[]>([])
 const selectedProduct = ref<PurchaseProduct | null>(null)
@@ -104,12 +111,13 @@ const purchaseSelected = async () => {
   isLoading.value = true
 
   try {
-    const result = await InAppPurchaseService.purchaseProduct(selectedProduct.value.id)
+    const success = await authStore.processPurchase(selectedProduct.value.id)
     
-    if (result.success) {
+    if (success) {
+      toastStore.success('Purchase successful!')
       emit('success', selectedProduct.value.id)
     } else {
-      error.value = result.error || 'Purchase failed'
+      error.value = 'Purchase failed. Please try again.'
     }
   } catch (err) {
     error.value = 'An unexpected error occurred'
@@ -123,13 +131,13 @@ const restorePurchases = async () => {
   error.value = ''
 
   try {
-    const results = await InAppPurchaseService.restorePurchases()
-    const successfulRestores = results.filter(r => r.success)
+    const restoredCount = await authStore.restorePurchases()
     
-    if (successfulRestores.length > 0) {
+    if (restoredCount > 0) {
+      toastStore.success(`Restored ${restoredCount} purchase(s)`)
       emit('success', 'restored')
     } else {
-      error.value = 'No purchases to restore'
+      toastStore.info('No purchases to restore')
     }
   } catch (err) {
     error.value = 'Failed to restore purchases'

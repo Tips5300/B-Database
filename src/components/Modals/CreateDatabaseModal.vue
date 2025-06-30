@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6">
-      <div class="flex justify-between items-center mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">
           {{ database ? 'Edit Database' : 'Create Database' }}
         </h2>
@@ -13,64 +13,66 @@
         </button>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Database Name
-          </label>
-          <input
-            id="name"
-            v-model="formData.name"
-            type="text"
-            required
-            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Enter database name"
-          />
-        </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Database Name
+            </label>
+            <input
+              id="name"
+              v-model="formData.name"
+              type="text"
+              required
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Enter database name"
+            />
+          </div>
 
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Description (Optional)
-          </label>
-          <textarea
-            id="description"
-            v-model="formData.description"
-            rows="3"
-            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white resize-none"
-            placeholder="Describe your database..."
-          ></textarea>
-        </div>
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description (Optional)
+            </label>
+            <textarea
+              id="description"
+              v-model="formData.description"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white resize-none"
+              placeholder="Describe your database..."
+            ></textarea>
+          </div>
 
-        <ThumbnailPicker v-model="formData.thumbnail" />
+          <ThumbnailPicker v-model="formData.thumbnail" />
 
-        <div class="flex items-center">
-          <input
-            id="encrypted"
-            v-model="formData.isEncrypted"
-            type="checkbox"
-            class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-          />
-          <label for="encrypted" class="ml-2 text-sm text-gray-900 dark:text-gray-300">
-            Enable encryption
-          </label>
-        </div>
+          <div class="flex items-center">
+            <input
+              id="encrypted"
+              v-model="formData.isEncrypted"
+              type="checkbox"
+              class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label for="encrypted" class="ml-2 text-sm text-gray-900 dark:text-gray-300">
+              Enable encryption
+            </label>
+          </div>
+        </form>
+      </div>
 
-        <div class="flex space-x-3 pt-4">
-          <button
-            type="button"
-            @click="$emit('close')"
-            class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
-          >
-            {{ database ? 'Update' : 'Create' }}
-          </button>
-        </div>
-      </form>
+      <div class="flex space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          @click="$emit('close')"
+          class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          @click="handleSubmit"
+          class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+        >
+          {{ database ? 'Update' : 'Create' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
           {{ record ? 'Edit Record' : 'Add Record' }}
         </h2>
@@ -13,53 +13,55 @@
         </button>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div
-            v-for="field in table.fields"
-            :key="field.id"
-            :class="[
-              field.type === 'long_text' || field.type === 'json' || field.type === 'csv' 
-                ? 'md:col-span-2' 
-                : ''
-            ]"
-          >
-            <label :for="field.id" class="form-label">
-              {{ field.name }}
-              <span v-if="field.isRequired" class="text-red-500 ml-1">*</span>
-              <span v-if="field.isPrimary" class="text-primary-600 dark:text-primary-400 ml-1">(Primary)</span>
-            </label>
-            
-            <FieldRenderer
-              :field="field"
-              :value="formData[field.id]"
-              :readonly="false"
-              @update:value="updateFieldValue(field.id, $event)"
-            />
-            
-            <div v-if="fieldErrors[field.id]" class="text-xs text-red-600 dark:text-red-400 mt-1">
-              {{ fieldErrors[field.id] }}
+      <div class="flex-1 overflow-y-auto p-6">
+        <form @submit.prevent="handleSubmit" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              v-for="field in table.fields"
+              :key="field.id"
+              :class="[
+                field.type === 'long_text' || field.type === 'json' || field.type === 'csv' 
+                  ? 'md:col-span-2' 
+                  : ''
+              ]"
+            >
+              <label :for="field.id" class="form-label">
+                {{ field.name }}
+                <span v-if="field.isRequired" class="text-red-500 ml-1">*</span>
+                <span v-if="field.isPrimary" class="text-primary-600 dark:text-primary-400 ml-1">(Primary)</span>
+              </label>
+              
+              <FieldRenderer
+                :field="field"
+                :value="formData[field.id]"
+                :readonly="false"
+                @update:value="updateFieldValue(field.id, $event)"
+              />
+              
+              <div v-if="fieldErrors[field.id]" class="text-xs text-red-600 dark:text-red-400 mt-1">
+                {{ fieldErrors[field.id] }}
+              </div>
             </div>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            @click="$emit('close')"
-            class="btn-secondary"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            :disabled="!isValid"
-            class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ record ? 'Update' : 'Add' }} Record
-          </button>
-        </div>
-      </form>
+      <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          @click="$emit('close')"
+          class="btn-secondary"
+        >
+          Cancel
+        </button>
+        <button
+          @click="handleSubmit"
+          :disabled="!isValid"
+          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {{ record ? 'Update' : 'Add' }} Record
+        </button>
+      </div>
     </div>
   </div>
 </template>
